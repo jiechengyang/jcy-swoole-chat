@@ -1,0 +1,9 @@
+[Service]
+Type=forking
+PIDFile=/var/run/swoole.pid
+ExecStart=php init.php -m redisChat -d 1
+ExecStop=/bin/kill $MAINPID
+ExecReload=/bin/kill -USR1 $MAINPID
+
+[Install]
+WantedBy = multi-user.target

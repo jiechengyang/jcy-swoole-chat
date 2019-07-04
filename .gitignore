@@ -1,0 +1,18 @@
+composer.phar
+/vendor/
+# Commit your application's lock file http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file
+# You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
+# composer.lock
+/composer.lock
+*.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+/node_modules/
+npm-debug.log
+/bower_components
+/runtime
+*.tags*
+*.idea
+/config/common-local.php
+/demo/

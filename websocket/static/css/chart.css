@@ -1,0 +1,83 @@
+@charset "UTF-8";
+
+/**
+ * chart css
+ * @authors jiechengyang (2064320087@qq.com)
+ * @date    2019-07-04 14:48:35
+ * @version $Id$
+ */
+.ibox-title {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #ffffff;
+    border-color: #e7eaec;
+    -webkit-border-image: none;
+    -o-border-image: none;
+    border-image: none;
+    border-style: solid solid none;
+    border-width: 4px 0px 0;
+    color: inherit;
+    margin-bottom: 0;
+    padding: 14px 15px 7px;
+    min-height: 48px;
+}
+
+.text-muted {
+    color: #888888;
+}
+
+.chat-discussion {
+    background: #eee;
+    padding: 15px;
+    height: 400px;
+    overflow-y: auto;
+}
+
+.chat-users {
+    overflow-y: auto;
+    height: 400px;
+}
+
+.chat-avatar {
+    white: 36px;
+    height: 36px;
+    float: left;
+    margin-right: 10px;
+}
+
+.chat-user {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e7eaec;
+}
+
+.chat-user-name {
+    padding: 10px;
+}
+
+.chat-user a {
+    color: inherit;
+}
+
+a {
+    cursor: pointer;
+}
+
+.chat-discussion .chat-message:nth-child(2n+1) .message-avatar {
+    float: left;
+    margin-right: 10px;
+}
+
+.message-avatar {
+    height: 48px;
+    width: 48px;
+    border: 1px solid #e7eaec;
+    border-radius: 4px;
+    margin-top: 1px;
+}
+
+label.required:after {
+    content: " * ";
+    color: red;
+}

@@ -1,0 +1,12 @@
+{
+    "name": "swoole-charts",
+    "description": "swoole4.3 chart",
+    "license": "Apache2.0",
+    "authors": [
+        {
+            "name": "Yjc",
+            "email": "yangjiecheng1995@163.com"
+        }
+    ],
+    "require": {}
+}
