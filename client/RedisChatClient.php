@@ -8,6 +8,7 @@
 namespace chat\client;
 
 use chat\helper\Color;
+use \Swoole\Timer;
 
 class RedisChatClient implements BaseClient
 {
@@ -73,12 +74,14 @@ class RedisChatClient implements BaseClient
 			case 'register':
 				return $this->__register($ws, $frame->fd, $data);
 				break;
+			case 'users':
+				return $this->__getUsers($ws, $frame->fd, $data);
 			default:
 				return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
 		}
 	}
 
-	private function __sign($ws, $fd, array $data)
+	private function __sign($ws, int $fd, array $data)
 	{
 		if (empty($data['username']) || empty($data['password'])) {
 			return $this->disconnect($ws, $frame->fd, "The authentication information is incorrect. Please bring your uid, user name and password with you.");
@@ -90,8 +93,33 @@ class RedisChatClient implements BaseClient
 		}
 
 		$user = $res[1];
+		// 这里应该有一个抢登下线当前fd,检测uid是否在其他终端登录
+		// 强制下线并给已经登录的人发送通知
+		if ( ($old_fd = $this->__checkisOnline($user['uid'])) !== false) {
+			// 下线通知：您的账号已在别的设备登录-code 107
+			$rs = $this->disconnect($ws, $old_fd, "Offline notification: your account is logged on to another device", 107);
+			// 清理过期/已断开的连接
+			$this->__clearOldSocket($ws, $old_fd, $user['uid']);
+		}
+
+		// 设置uid与fd对应关系
 		self::$FdMapping->uidBindFd($user['uid'], $fd);
-		return $this->successSend($ws, $fd, ['uid' => $user['uid']], 'sign success');	
+		self::$FdMapping->fdBindUid($fd, $user['uid']);
+	
+		Timer::after(500, function() use ($ws, $fd) {
+			// 广播更新用户
+			$this->__broadcast($ws, $fd);
+		});
+
+		return $this->successSend($ws, $fd, [
+			'uid' => $user['uid'],
+			'users' => self::$FdMapping->getSafeUserList(),
+			], 'sign success');	
+	}
+
+	private function __checkisOnline(string $uid)
+	{
+		return !empty(self::$FdMapping->getFdByUid($uid)) ? self::$FdMapping->getFdByUid($uid) : false;
 	}
 
 	private function __register($ws, $fd, array $data)
@@ -102,6 +130,47 @@ class RedisChatClient implements BaseClient
 		}
 
 		return $this->successSend($ws, $fd, [], 'register success');
+	}
+
+	private function __getUsers($ws, int $fd, array $data)
+	{
+		// $uid = self::$FdMapping->getUidByFd($fd);
+		// if (empty($uid)) {
+		// 	return $this->disconnect($ws, $fd, "No login, please log in and visit");
+		// }
+
+		if (! self::$FdMapping->checkExistByUser($data['uid'], 'uid')) {
+			return $this->disconnect($ws, $fd, "The user does not exist");
+		}
+		// 设置uid与fd对应关系
+		self::$FdMapping->uidBindFd($data['uid'], $fd);
+		self::$FdMapping->fdBindUid($fd, $data['uid']);
+		$users = self::$FdMapping->getSafeUserList();
+
+		return $this->successSend($ws, $fd, ['users' => $users], 'lasted userlist', 100);	
+	}
+
+	// 广播	
+	private function __broadcast($ws, $fd, int $type = 1)
+	{
+		if ( 1 === $type ) {
+			$users = self::$FdMapping->getSafeUserList();
+			foreach ($users as $user) {
+				$sfd = self::$FdMapping->getFdByUid($user['uid']);
+				if ($sfd === $fd || !$ws->exist($sfd)) continue;
+		    	$this->successSend($ws, $sfd, ['users' => $users], 'lasted userlist', 102);
+			}
+		}
+	}
+
+	private function __clearOldSocket($ws, int $old_fd, string $uid)
+	{
+		// $fds = self::$FdMapping->getFdsByUid($user['uid']);
+		// // ->exist():检测fd对应的连接是否存在
+		// foreach ($fds as $fd) {
+		// 	!$ws->exist($fd) && self::$FdMapping->delFd($fd);
+		// }
+		!$ws->exist($old_fd) && self::$FdMapping->delFd($old_fd, $uid);
 	}
 
 	protected function successSend($ws, int $fd, array $data = [], string $msg = 'ok', int $code = 100)
@@ -130,12 +199,12 @@ class RedisChatClient implements BaseClient
 		echo PHP_EOL, PHP_EOL;
 	}
 
-	private function disconnect($ws, int $fd, string $msg, int $code = 101)
+	private function disconnect($ws, int $fd, string $msg, int $code = 105, array $data = [])
 	{
-		self::showMsg('showError', $msg);
+		self::showMsg('showError', "code:{$code}\nmsg:{$msg}");
 		$jsonData = json_encode([
 			'code' => $code,
-			'data' => '',
+			'data' => $data,
 			'msg' => $msg,
 		]);
 		$ws->push($fd, $jsonData);

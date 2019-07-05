@@ -60,19 +60,6 @@ class FdMapping
         !empty($redisConfig['db']) && $this->redis->select($redisConfig['db']);
     }
 
-    public function uidBindFd(string $uid, int $fid)
-    {
-        $this->redis->sAdd(self::MAP_UID_FD_PREFIX . $uid, $fid);
-    }
-
-    public function fdBindUid(int $fid, string $uid, int $expire = 24 * 3600)
-    {
-        $this->redis->setex(self::MAP_FD_UID_PREFIX . $fid, $expire, $uid);
-        // OR next
-        // $this->redis->set(self::MAP_FD_UID_PREFIX . $fid, $uid);
-        // $this->redis->expireAt('key', $expire);
-    }
-
     public function login(string $username, string $password): array
     {
         // $userList = $this->getUserList();
@@ -84,6 +71,12 @@ class FdMapping
         if (! $this->checkPassword($password, $user['password'])) {
             return [103, 'Wrong username or password'];
         }
+
+        // $uidByFd = $this->getUidByFd($user['uid']);
+
+        // if (!empty($uidByFd)) {
+        //     return [107, 'The account is already logged in on another device'];
+        // }
 
         return [100, $user];
     }
@@ -124,7 +117,7 @@ class FdMapping
         return [101, "User registration failed"];
     }
 
-    private function getUserList(): array
+    public function getUserList(): array
     {
         $userList = [];
         $dbUser = $this->redis->hgetall('chat.user');
@@ -136,13 +129,29 @@ class FdMapping
         return $userList;
     }
 
-    private function checkExistByUser(string $value, string $key = 'username'): bool
+    public function getSafeUserList(): array
+    {
+        $userList = $this->getUserList();
+        $users = [];
+        if ($userList) {
+            foreach ($userList as $user) {
+                $user['online'] = empty($this->getFdByUid($user['uid'])) ? 0 : 1;
+                unset($user['password']);
+                $users[] = $user;
+            }
+        }
+
+        return $users;
+
+    }
+
+    public function checkExistByUser(string $value, string $skey = 'username'): bool
     {
         $userList = $this->getUserList();// !$this->userList ? $this->getUserList() : $userList;
         $exitFlag = false;
         if (!$userList) return $exitFlag;
         foreach ($userList as $key => $val) {
-            if ( $val[$key] === $value ) {
+            if ( $val[$skey] === $value ) {
                 $exitFlag = true;
                 break;
             }
@@ -164,6 +173,69 @@ class FdMapping
         }
 
         return $user;
+    }
+
+    // uid与fd对应，支持多端/多页面
+    // public function uidBindFd(string $uid, int $fid)
+    // {
+    //     $this->redis->sAdd(self::MAP_UID_FD_PREFIX . $uid, $fid);
+    // }
+
+    //uid与fd对应，支持多端抢占式登录/有登录会话机制,所以一个放弃多页面
+    public function uidBindFd(string $uid, int $fid, int $expire = 7 * 24 * 3600)
+    {
+        $this->redis->setex(self::MAP_UID_FD_PREFIX . $uid, $expire, $fid);
+    }
+
+    // fd与uid对应
+    public function fdBindUid(int $fid, string $uid, int $expire = 7 * 24 * 3600)
+    {
+        $this->redis->setex(self::MAP_FD_UID_PREFIX . $fid, $expire, $uid);
+        // OR next
+        // $this->redis->set(self::MAP_FD_UID_PREFIX . $fid, $uid);
+        // $this->redis->expireAt('key', $expire);
+    }
+
+    // 获取fd对应的uid
+    public function getUidByFd($fd)
+    {
+        // return key
+        return $this->redis->get(self::MAP_FD_UID_PREFIX . $fd);
+    }
+
+    // 获取uid->fid
+    public function getFdByUid($uid)
+    {
+        return $this->redis->get(self::MAP_UID_FD_PREFIX . $uid);
+    }
+    // 获取uid全部fd，确保多端都能收到信息
+    // public function getFdsByUid($uid)
+    // {
+    //     // 作用: 返回集中中所有的元素
+    //     return $this->redis->sMembers(self::MAP_UID_FD_PREFIX . $uid);
+    // }
+
+    // 删除uid的某个fd
+    public function delFd($fd, $uid = null)
+    {
+        if (is_null($uid)) {
+            $uid = $this->getUidByFd($fd);
+        }
+
+        if (!$uid) {
+            return false;
+        }
+
+        // srem
+        // 作用: 删除集合中集为 value1 value2的元素
+        // 返回值: 忽略不存在的元素后,真正删除掉的元素的个数
+        // $this->redis->srem(self::MAP_UID_FD_PREFIX . $uid, $fd);
+        $this->redis->del(self::MAP_UID_FD_PREFIX . $uid, $fd);
+        // del
+        // 作用: 删除1个或多个键
+        // 返回值: 不存在的key忽略掉,返回真正删除的key的数量
+        $this->redis->del(self::MAP_FD_UID_PREFIX . $fd);
+        return true;
     }
 
     /**
