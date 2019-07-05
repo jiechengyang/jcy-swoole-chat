@@ -23,22 +23,25 @@
                     </div>
                     <div class="ibox-content">
                         <div class="row">
-                            <div class="col-md-9">
-                                <div class="chat-sys">
+                            <div class="col-md-12 chat-sys" id="chat-sys">
+                                <div class="chat-message">
                                     <div class="chat-message">
-                                        <div class="chat-message">
-                                            <img class="message-avatar" src="static/images/sys_logo.jpg" alt="">
-                                            <div class="message">
-                                                <a class="message-author" href="#"> 系统信息</a>
-                                                <span class="message-date" id="current_time"></span>
-                                                <span class="message-content">
-                                                   欢迎大家来到JSWOOLE聊天室
-                                                </span>
-                                            </div>
+                                        <img class="message-avatar" src="static/images/sys_logo.jpg" alt="">
+                                        <div class="message">
+                                            <a class="message-author" href="#"> 系统信息</a>
+                                            <span class="message-date" id="current_time"></span>
+                                            <span class="message-content">
+                                               欢迎大家来到JSWOOLE聊天室
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="chat-discussion hide">
+                            </div>
+                        </div>
+                        <div class="row hide" id="chat-discussion">
+                            <!-- 聊天记录窗口 s-->
+                            <div class="col-md-9">
+                                <div class="chat-discussion " >
                                     <div class="chat-message">
                                         <img class="message-avatar" src="static/images/woman_logo.jpg" alt="">
                                         <div class="message">
@@ -61,10 +64,12 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- 聊天记录窗口 e-->
+                            <!-- 好友窗口 s-->
                             <div class="col-md-3">
-                                <div class="chat-users hide">
-                                    <div class="users-list">
-                                        <div class="chat-user">
+                                <div class="chat-users hide" id="chat-users">
+                                    <div class="users-list" id="users-list">
+<!--                                         <div class="chat-user">
                                             <img class="chat-avatar" src="static/images/woman_logo.jpg" alt="">
                                             <div class="chat-user-name">
                                                 <a href="#">伤城Simple</a>
@@ -89,12 +94,14 @@
                                             <div class="chat-user-name">
                                                 <a href="#">ZM敏姑娘 </a>
                                             </div>
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
+                            <!-- 好友窗口 e-->
                         </div>
-                        <div class="row">
+                        <!-- 发送消息窗口 s-->
+                        <div class="row hide" id="chat-message-form">
                             <div class="col-sm-12">
                                 <div class="chat-message-form">
                                     <div class="form-group">
@@ -103,6 +110,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- 发送消息窗口 e-->
                     </div>
                 </div>
             </div>
