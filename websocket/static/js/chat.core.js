@@ -24,7 +24,7 @@ const cookie = {
         } else {
             expireDate.setDate(expireDate.getDate() + num);
         }
-        
+
         if (typeof value == "object") {
             value = JSON.stringify(value);
         }
@@ -171,6 +171,33 @@ let utils = {
         }, others)
         // console.log('params:', params)
         return layer.open(params)
+    },
+    onContextmenu: (id, opts) => {
+        context.init({
+            preventDoubleContext: false,
+            filter: function($obj) {}
+        });
+        opts = opts || [{
+                header: '菜单列表'
+            }, {
+                text: '发起聊天',
+                href: 'javascript:;',
+                action: function(e) {
+                    e.preventDefault()
+                }
+            }, {
+                text: '互加好友',
+                href: '#'
+            }, {
+                text: '设为特别关心',
+                href: '#'
+            }
+            // , {
+            //     divider: true
+            // }
+        ];
+
+        context.attach(id, opts);
     }
 }
 
@@ -316,7 +343,7 @@ let business = {
     openWebSocket: () => {
         layer.load()
         business.socketIO = new SocketIO({
-            wsUrl: 'ws://192.168.2.173:9502'
+            wsUrl: 'ws://192.168.2.121:9502'
         })
     },
     initManPage: (sure, res) => {
@@ -357,13 +384,82 @@ let business = {
             for (const i in users) {
                 const user = users[i]
                 const avatar = 1 == user.sex ? 'woman_logo.jpg' : 'man_logo.jpg'
+                const uid = cookie.get(business.session_key)
+                let self_html = ''
+                let self_class = ''
+                if (uid === user.uid) {
+                    self_html = '<span class="label label-success"><i class="fa fa-heart"></i> 我</span>'
+                    self_class = 'self_uid'
+                }
                 // 是否在线判断
                 const online_html = 1 == user.online ? '<span class="pull-right label label-primary">在线</span>' : '<span class="pull-right label label-danger">离线</span>'
-                const child = "<div class=\"chat-user\">" + online_html + "<img class=\"chat-avatar\" src=\"static/images/" + avatar + "\" alt=\"\"> <div class=\"chat-user-name\"><a href=\"#\">" + user.username + "</a></div></div>"
+                const child = "<div class=\"chat-user " + self_class + "\">" + online_html + "<div><img class=\"chat-avatar\" src=\"static/images/" + avatar + "\" alt=\"\"> " + self_html + "</div><div class=\"chat-user-name\"><a href=\"javascript:;\">" + user.username + "</a></div></div>"
                 $("#users-list").append(child)
             }
+            // 右键菜单
+            utils.onContextmenu('#users-list');
+            utils.onContextmenu('#users-list .self_uid', [
+                {
+                    text: '退出登录',
+                    href: '#',
+                    action: function(e) {
+                        e.preventDefault()
+                        layer.confirm('确认退出吗?', {icon: 3, title:'提示'}, function(index) {
+                            business.logout(index)
+                        })
+                    }
+                }
+            ]);
         }
-    }
+    },
+    logout: (layIndex) => {
+        layIndex = layIndex || null;
+        const uid = cookie.get(business.session_key)
+        cookie.delete(business.session_key)
+        business.socketIO.ws.send(JSON.stringify({
+            type: 'logout',
+            uid: uid            
+        }))
+
+        business.socketIO.RegisterCallFunc.successCall = (ws, response) => {
+            ws.close()
+            location.reload()
+            return true
+        }        
+    },
+    chat: (to) => {
+        // from = from || cookie.get(business.session_key);
+        let html = $("#chatModel").html();
+        const params = {
+            area: ['1000px'],
+            shade: 0.8,
+            id: 'LAY_layui_chat', //设定一个id，防止重复弹出
+            resize: false,
+            // btn: ['火速围观', '残忍拒绝'],
+            btnAlign: 'c',
+            moveType: 1, //拖拽模式，0或者1,                      
+        }
+
+        let chatLayer = utils.openPage(1, false, html, params);
+        /* 聊天相关的业务逻辑 start*/
+        $("textarea[name='message']").on('keydown', (event) => {
+            if (!business.isLogin()) {
+                return false
+            }
+            let msg = utils.trim($(this).val())
+            if (event.keyCode === 13 && msg) {
+                console.log(msg)
+                return
+                socket.send(JSON.stringify({
+                    type: 'msg',
+                    from: from,
+                    to: to,
+                    body: msg
+                }))
+            }
+        })
+        /* 聊天相关的业务逻辑 end*/
+    } 
 }
 
 class StoreCache {
@@ -544,13 +640,12 @@ class SocketIO {
     }
 }
 
-$(() => {
-
+$(document).ready(() => {
     // 初始化检测登录相关
     if (business.isLogin()) {
         layer.load()
         business.socketIO = new SocketIO({
-            wsUrl: 'ws://192.168.2.173:9502',
+            wsUrl: 'ws://192.168.2.121:9502',
         })
         business.initManPage(true)
     } else {
@@ -590,20 +685,4 @@ $(() => {
         })
     }
     /* 登录注册 event bind end */
-
-    /* 聊天相关的业务逻辑 start*/
-    $("textarea[name='message']").on('keydown', (event) => {
-        if (!business.isLogin()) {
-            return false
-        }
-        let msg = utils.trim($(this).val())
-        if (event.keyCode === 13 && msg) {
-            socket.send(JSON.stringify({
-                type: 'msg',
-                from: socket.uid,
-                body: msg
-            }))
-        }
-    })
-    /* 聊天相关的业务逻辑 end*/
 })

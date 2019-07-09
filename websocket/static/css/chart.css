@@ -34,7 +34,9 @@
     height: 400px;
     overflow-y: auto;
 }
-
+.chat-message {
+    padding: 10px 20px;
+}
 .chat-users {
     overflow-y: auto;
     height: 400px;
@@ -63,12 +65,45 @@
 a {
     cursor: pointer;
 }
-
+.chat-message .message {
+    background-color: #fff;
+    border: 1px solid #e7eaec;
+    text-align: left;
+    display: block;
+    padding: 10px 20px;
+    position: relative;
+    border-radius: 4px;
+}
 .chat-discussion .chat-message:nth-child(2n+1) .message-avatar {
     float: left;
     margin-right: 10px;
 }
+.chat-discussion .chat-message:nth-child(2n+1) .message {
+    text-align: left;
+    margin-left: 55px;
+}
 
+.chat-discussion .chat-message:nth-child(2n+1) .message-date {
+    float: right;
+}
+.chat-discussion .chat-message:nth-child(2n) .message-avatar {
+    float: right;
+    margin-left: 10px;
+}
+.chat-discussion .chat-message:nth-child(2n) .message {
+    text-align: right;
+    margin-right: 55px;
+}
+.message-date {
+    font-size: 10px;
+    color: #888888;
+}
+.message-content {
+    display: block;
+}
+.chat-msg {
+    min-height: 400px;
+}
 .message-avatar {
     height: 48px;
     width: 48px;
@@ -80,4 +115,87 @@ a {
 label.required:after {
     content: " * ";
     color: red;
+}
+
+/****使用外链样式配置右键菜单*****/
+.kinerMenuBox {
+    width: 200px;
+    background: #FEFEFE;
+    border: solid 1px #444444;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 1px 1px 5px #000, -1px -1px 5px #fff;
+    -webkit-box-shadow: 1px 1px 5px #000, -1px -1px 5px #fff;
+    -moz-box-shadow: 1px 1px 5px #000, -1px -1px 5px #fff;
+    -o-box-shadow: 1px 1px 5px #000, -1px -1px 5px #fff;
+    font-size: 16px;
+    position: absolute;
+}
+
+.kinerMenuBox .kinerMenuTitle {
+    background: #DDDDDD;
+    padding: 10px 5px;
+    border-bottom: inset #444444 1px;
+    cursor: default
+}
+
+.kinerMenuBox .kinerMenuTitle .kinerMenuTitleIcon {
+    width: 30px;
+    height: 30px
+}
+
+.kinerMenuBox .kinerMenuTitle .kinerMenuTitleCon {
+    height: 30px;
+    line-height: 30px;
+    padding-left: 10px;
+    color: #444444;
+    font-size: 18px;
+    display: inline-block;
+    vertical-align: top
+}
+
+.kinerMenuBox .kinerMenuItem {
+    background: #FFF;
+    padding: 5px 5px;
+}
+
+.kinerMenuBox .kinerMenuItem:hover {
+    background: #CCC;
+}
+
+.kinerMenuBox .kinerMenuItem .kinerMenuItemIcon {
+    display: inline-block;
+    width: 30px;
+    height: 30px
+}
+
+.kinerMenuBox .kinerMenuItem .kinerMenuItemCon {
+    height: 30px;
+    line-height: 30px;
+    padding-left: 10px;
+    position: relative;
+    color: #444444;
+    font-size: 16px;
+    display: inline-block;
+    vertical-align: top
+}
+
+.kinerMenuBox .kinerSeparator {
+    width: 100%;
+    height: 1px;
+    border-bottom: dashed 1px #444444;
+    /*background: #444444*/
+    border-left: none;
+    border-right: none
+}
+
+.kinerMenuBox .kinerKeyMap {
+    margin-right: 5px;
+    right: 10px;
+    position: absolute;
+    color: #444444;
+    height: 30px;
+    line-height: 30px;
+    display: inline-block;
 }
