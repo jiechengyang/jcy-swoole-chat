@@ -7,18 +7,24 @@
  */
 namespace chat\libs;
 
+use \swoole_table;
+
 class FdMapping
 {
     const MAP_UID_FD_PREFIX = 'chat_map_uid_fd:';
     const MAP_FD_UID_PREFIX = 'chat_map_fd_uid:';
+    const MAP_UID_LOGINED_AT_PERFIX = 'chat_map_uid_logined_at:';
 
     private $redis;
 
     private $userList;
 
+    private $userConfig;
+
     public function __construct(bool $enableCoroutine = false) 
     {
         $redisConfig = \chat\Application::getRedisConfig();
+        $this->userConfig = \chat\Application::getUserConfig();
         if ($enableCoroutine) {
             $this->goRoutineRedis($redisConfig);
         } else {
@@ -175,6 +181,11 @@ class FdMapping
         return $user;
     }
 
+    public function logout(string $uid, int $fd): bool
+    {
+        return $this->delFd($fd, $uid) && $this->redis->del(self::MAP_UID_LOGINED_AT_PERFIX . $uid);
+    }
+
     // uid与fd对应，支持多端/多页面
     // public function uidBindFd(string $uid, int $fid)
     // {
@@ -208,6 +219,32 @@ class FdMapping
     {
         return $this->redis->get(self::MAP_UID_FD_PREFIX . $uid);
     }
+    
+    // set user login lasted time 
+    public function setUserLoginLasted(string $uid, int $logined_at, int $expire = 7 * 24 * 3600)
+    {
+        $this->redis->setex(self::MAP_UID_LOGINED_AT_PERFIX . $uid, $expire, $logined_at);
+    }
+
+    // get user login lasted time 
+    public function getUserLoginLasted(string $uid)
+    {
+        return $this->redis->get(self::MAP_UID_LOGINED_AT_PERFIX . $uid);
+    }
+
+    // check user login Overdue
+    public function checkLoginOverdue(string $uid)
+    {
+        $loginAt = $this->getUserLoginLasted($uid);
+        if (! empty($userLoginAt)) {
+            if ( (time() - $loginAt) > $this->userConfig['login_expire_time'] ) {
+                return true;
+            }
+        }
+
+        return false;    
+    }
+
     // 获取uid全部fd，确保多端都能收到信息
     // public function getFdsByUid($uid)
     // {
@@ -286,5 +323,18 @@ class FdMapping
                      . chr(125);
             return $uuid;   
         }
+    }
+
+    public function saveChatMsg($from, $to, $msg)
+    {
+        $table = new swoole_table(1024);
+        $table->column('from', swoole_table::TYPE_STRING, 64);
+        // $table->column('current_from_fd', swoole_table::INT);
+        $table->column('to', swoole_table::TYPE_STRING, 64);
+        // $table->column('current_to_fd', swoole_table::INT);
+        $table->column('msg', swoole_table::TYPE_STRING);
+        $table->create();
+        $table['chat.msg'] = array('from' => $from, 'to' => $to, 'msg' => $msg);
+        return $table;
     }
 }

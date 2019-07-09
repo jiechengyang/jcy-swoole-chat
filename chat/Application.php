@@ -97,6 +97,11 @@ IMG;
       return self::$config['redis'];
     }
 
+    public static function getUserConfig(): array
+    {
+      return self::$config['user'];
+    }
+
   	private function errorHandler()
   	{
   		if (SCHAT_DEBUG) {

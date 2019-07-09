@@ -37,5 +37,8 @@ return [
 		'retry_interval' => NULL,
 		'read_timeout'  => 100,
 		'persistent_id' => 'JSWOOLE'
+	],
+	'user' => [
+		'login_expire_time' => 7 * 24 * 3600
 	]
 ];

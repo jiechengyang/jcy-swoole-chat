@@ -9,6 +9,7 @@ namespace chat\client;
 
 use chat\helper\Color;
 use \Swoole\Timer;
+use \swoole_table;
 
 class RedisChatClient implements BaseClient
 {
@@ -76,9 +77,36 @@ class RedisChatClient implements BaseClient
 				break;
 			case 'users':
 				return $this->__getUsers($ws, $frame->fd, $data);
+			case 'logout':
+				return $this->__logout($ws, $frame->fd, $data);
+			case 'msg':
+				return $this->__chat($ws, $frame->id, $data);
 			default:
 				return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
 		}
+	}
+
+	private function __chat($ws, int $fd, array $data)
+	{
+		// if (empty($data['from'])) {
+		// 	return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
+		// }
+		if (empty($data['to'])) {
+			return $this->disconnect($ws, $frame->fd, "The listener doesn't exist.");
+		}
+
+		if (empty($data['msg'])) {
+			return $this->disconnect($ws, $frame->fd, "Please input msg");
+		}
+
+		$uid = self::$FdMapping->getFdByUid($fd);
+		if (empty($uid)) {
+			return $this->disconnect($ws, $frame->fd, "The Sender doesn't exist.");
+		}
+
+		//online send
+		//offline save
+
 	}
 
 	private function __sign($ws, int $fd, array $data)
@@ -105,7 +133,7 @@ class RedisChatClient implements BaseClient
 		// 设置uid与fd对应关系
 		self::$FdMapping->uidBindFd($user['uid'], $fd);
 		self::$FdMapping->fdBindUid($fd, $user['uid']);
-	
+		self::$FdMapping->setUserLoginLasted($user['uid'], time());
 		Timer::after(500, function() use ($ws, $fd) {
 			// 广播更新用户
 			$this->__broadcast($ws, $fd);
@@ -142,12 +170,29 @@ class RedisChatClient implements BaseClient
 		if (! self::$FdMapping->checkExistByUser($data['uid'], 'uid')) {
 			return $this->disconnect($ws, $fd, "The user does not exist");
 		}
+
+		// Login failure has expired
+		if (self::$FdMapping->checkLoginOverdue($data['uid'])) {
+			return $this->disconnect($ws, $fd, 'Login failure has expired');
+		}
+
+		self::$FdMapping->delFd($fd, $data['uid']);
+
 		// 设置uid与fd对应关系
 		self::$FdMapping->uidBindFd($data['uid'], $fd);
 		self::$FdMapping->fdBindUid($fd, $data['uid']);
 		$users = self::$FdMapping->getSafeUserList();
 
 		return $this->successSend($ws, $fd, ['users' => $users], 'lasted userlist', 100);	
+	}
+
+	private function __logout($ws, int $fd, array $data)
+	{
+		if (self::$FdMapping->logout($data['uid'], $fd)) {
+			return $this->successSend($ws, $fd, [], 'logout', 100);
+		}
+
+		return $this->disconnect($ws, $fd, 'not found uid', 101, [], false);
 	}
 
 	// 广播	
@@ -199,7 +244,7 @@ class RedisChatClient implements BaseClient
 		echo PHP_EOL, PHP_EOL;
 	}
 
-	private function disconnect($ws, int $fd, string $msg, int $code = 105, array $data = [])
+	private function disconnect($ws, int $fd, string $msg, int $code = 105, array $data = [], bool $close = true)
 	{
 		self::showMsg('showError', "code:{$code}\nmsg:{$msg}");
 		$jsonData = json_encode([
@@ -209,7 +254,7 @@ class RedisChatClient implements BaseClient
 		]);
 		$ws->push($fd, $jsonData);
 		// $ws->disconnect($fd);
-		$ws->close($fd);
+		 $close && $ws->close($fd);
 		return false;
 	}	
 }
