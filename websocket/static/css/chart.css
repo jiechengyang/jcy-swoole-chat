@@ -103,6 +103,7 @@ a {
 }
 .chat-msg {
     min-height: 400px;
+    overflow-y: scroll;
 }
 .message-avatar {
     height: 48px;

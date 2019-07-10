@@ -79,6 +79,7 @@ const cookie = {
         return value;
     }
 }
+
 let utils = {
     trim: (x) => {
         return x.replace(/^\s+|\s+$/gm, '')
@@ -169,35 +170,30 @@ let utils = {
             content: content,
             type: type,
         }, others)
-        // console.log('params:', params)
         return layer.open(params)
     },
     onContextmenu: (id, opts) => {
         context.init({
             preventDoubleContext: false,
-            filter: function($obj) {}
-        });
-        opts = opts || [{
-                header: '菜单列表'
-            }, {
-                text: '发起聊天',
-                href: 'javascript:;',
-                action: function(e) {
-                    e.preventDefault()
-                }
-            }, {
-                text: '互加好友',
-                href: '#'
-            }, {
-                text: '设为特别关心',
-                href: '#'
-            }
-            // , {
-            //     divider: true
-            // }
-        ];
+            // filter: function($obj) {}
+        })
 
-        context.attach(id, opts);
+        context.attach(id, opts)
+    },
+    toPhpDate: (phpTimestamp) => {
+        let str = parseInt(phpTimestamp) * 1000//将php时间戳转化为整形并乘以1000
+        return utils.toDate(str)
+    },
+    toDate: (time) => {
+        let newDate = new Date(time)
+        let year = newDate.getUTCFullYear()//取年份
+        let month = newDate.getUTCMonth() + 1//取月份
+        let nowday = newDate.getUTCDate()//取天数
+        let hours = newDate.getHours()//取小时
+        let minutes = newDate.getMinutes()//取分钟
+        let seconds = newDate.getSeconds()//取秒
+
+        return year + "-" + month + "-" + nowday + " " + hours + ":" + minutes + ":" + seconds        
     }
 }
 
@@ -206,6 +202,8 @@ let business = {
     socketIO: null,
     ladda: null,
     session_key: 'ws_swoole_chart_login_start',
+    storage_key: 'jswoole.chat',
+    userList: null,
     isLogin: () => {
         var u_login = cookie.get(business.session_key)
         if (utils.isNull(u_login)) {
@@ -336,9 +334,6 @@ let business = {
                 business.openLogin()
             }, 1000)
         }
-        // business.socketIO.RegisterCallFunc.errorCall = (ws, response) => {
-
-        // }
     },
     openWebSocket: () => {
         layer.load()
@@ -351,8 +346,6 @@ let business = {
         if (sure) {
             $("#chat-discussion").show()
             $("#chat-discussion").removeClass('hide')
-            $("#chat-message-form").show()
-            $("#chat-message-form").removeClass('hide')
             $("#chat-users").show()
             $("#chat-users").removeClass('hide')
             if (utils.isNull(res)) { //已经登陆，需要向服务端获取用户列表
@@ -364,16 +357,16 @@ let business = {
                     const data = response.data
                     console.log(data)
                     business.createUsers(data.users)
+                    business.userList = data.users
                     return true;
                 }
             } else {
                 business.createUsers(res.users)
+                business.userList = res.users
             }
         } else {
             $("#chat-discussion").hide()
             $("#chat-discussion").addClass('hide')
-            $("#chat-message-form").hide()
-            $("#chat-message-form").addClass('hide')
             $("#chat-users").hide()
             $("#chat-users").addClass('hide')
         }
@@ -393,11 +386,12 @@ let business = {
                 }
                 // 是否在线判断
                 const online_html = 1 == user.online ? '<span class="pull-right label label-primary">在线</span>' : '<span class="pull-right label label-danger">离线</span>'
-                const child = "<div class=\"chat-user " + self_class + "\">" + online_html + "<div><img class=\"chat-avatar\" src=\"static/images/" + avatar + "\" alt=\"\"> " + self_html + "</div><div class=\"chat-user-name\"><a href=\"javascript:;\">" + user.username + "</a></div></div>"
+                const child = "<div class=\"chat-user " + self_class + "\" data-uid=\"" + user.uid + "\">" + online_html + "<div><img class=\"chat-avatar\" src=\"static/images/" + avatar + "\" alt=\"\"> " + self_html + "</div><div class=\"chat-user-name\"><a href=\"javascript:;\">" + user.username + "</a></div></div>"
                 $("#users-list").append(child)
+                uid !== user.uid && business.contextmenu("div.chat-user[data-uid='" + user.uid + "']", user.uid)
             }
             // 右键菜单
-            utils.onContextmenu('#users-list');
+            // utils.onContextmenu('#users-list')
             utils.onContextmenu('#users-list .self_uid', [
                 {
                     text: '退出登录',
@@ -409,8 +403,33 @@ let business = {
                         })
                     }
                 }
-            ]);
+            ])
         }
+    },
+    contextmenu: (id, uid) => {
+        context.init({
+            preventDoubleContext: false,
+        })
+
+        const opts = [{
+                header: '菜单列表'
+            }, {
+                text: '发起聊天',
+                href: 'javascript:;',
+                action: function(e) {
+                    e.preventDefault()
+                    business.chat(uid)
+                }
+            }, {
+                text: '互加好友',
+                href: '#'
+            }, {
+                text: '设为特别关心',
+                href: '#'
+            }
+        ]
+
+        context.attach(id, opts)
     },
     logout: (layIndex) => {
         layIndex = layIndex || null;
@@ -427,39 +446,161 @@ let business = {
             return true
         }        
     },
-    chat: (to) => {
+    chat: (uid) => {
         // from = from || cookie.get(business.session_key);
-        let html = $("#chatModel").html();
+        // static/images/woman_logo.jpg
+        // let html = $("#chatModel").html()
+        const user = business.getUser(uid)
+        if (!user) return
+        const sex_logo = 1 == user.sex ? 'static/images/woman_logo.jpg' : 'static/images/man_logo.jpg'
+        const title = '和' + user.username + '聊天'
+        let suid = uid.replace("{", '')
+        suid = suid.replace("}", '')
+        let html = '<div  id="chatModel-' + suid + '">' +
+            '<div class="ibox">' +
+                '<div class="ibox-title">' + 
+                    '<img class="message-avatar" src="' + sex_logo + '" alt="">' +
+                '</div>' +
+                '<div class="ibox-content">' +
+                    '<div class="row">' +
+                        '<div class="col-md-12 ">' +
+                            '<div class="chat-discussion">' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="row">' + 
+                        '<div class="col-sm-12">' +
+                            '<div class="chat-message-form">' +
+                                '<div class="form-group">' +
+                                    '<textarea class="form-control message-input" name="message" placeholder="输入消息内容，按回车键发送" onkeydown="business.sendMsg(this)" data-to="' + uid + '"></textarea>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' + 
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '</div>';
         const params = {
             area: ['1000px'],
             shade: 0.8,
             id: 'LAY_layui_chat', //设定一个id，防止重复弹出
-            resize: false,
+            resize: true,
+            maxmin: true,
+            shadeClose: true,
+            closeBtn: 1,
             // btn: ['火速围观', '残忍拒绝'],
-            btnAlign: 'c',
-            moveType: 1, //拖拽模式，0或者1,                      
+            // btnAlign: 'c',
+            // moveType: 1, //拖拽模式，0或者1,                      
         }
 
-        let chatLayer = utils.openPage(1, false, html, params);
-        /* 聊天相关的业务逻辑 start*/
-        $("textarea[name='message']").on('keydown', (event) => {
-            if (!business.isLogin()) {
-                return false
+        let chatLayer = utils.openPage(1, title, html, params)
+        let muid = cookie.get(business.session_key)
+        // {F82D2637-4B3F-8561-A95B-6EF6CDBC4D6F} {1CC18625-2759-01EA-1705-0D4204FF0CA2}
+        // 我发送别人
+        let msgs = business.getStorageMsg(muid, uid)
+        console.log('我发送别人:' + msgs);
+        if (!utils.isNull(msgs)) {
+            for (let i = 0; i < msgs.length; i++) {
+                const user = business.getUser(msgs[i][0])
+                if (!user) continue
+                console.log(msgs[i]);
+                business.creatChatDom(user, msgs[i][1], msgs[i][2], msgs[i][3])
             }
-            let msg = utils.trim($(this).val())
-            if (event.keyCode === 13 && msg) {
-                console.log(msg)
-                return
-                socket.send(JSON.stringify({
-                    type: 'msg',
-                    from: from,
-                    to: to,
-                    body: msg
-                }))
+        }
+        // 我收到
+        msgs = business.getStorageMsg(uid, muid)
+        console.log('我收到:' + msgs);
+        if (!utils.isNull(msgs)) {
+            for (let i = 0; i < msgs.length; i++) {
+                const user = business.getUser(msgs[i][0])
+                if (!user) continue
+                business.creatChatDom(user, msgs[i][0], msgs[i][2], msgs[i][3])
             }
-        })
-        /* 聊天相关的业务逻辑 end*/
-    } 
+        }
+    },
+    getStorageMsg: (from, to) => {
+        const cache = new StoreCache(business.storage_key)
+        const key = from + ':' + to
+        return JSON.parse(cache.get(key))
+    },
+    sendMsg: (dom) => {
+        if (!business.isLogin()) {
+            return false
+        }
+        let msg = utils.trim($(dom).val())
+        if (event.keyCode === 13 && msg) {
+            // console.log(msg, $(dom).data('to'))
+            business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
+            business.socketIO.ws.send(JSON.stringify({
+                type: 'msg',
+                // from: from,
+                to: $(dom).data('to'),
+                body: msg
+            }))
+            $(dom).val('')
+        }
+    },
+    createChatSendMsg: (from, to, msg, time) => {
+        // 我发送给别人的信息
+        const user = business.getUser(from)
+        if (!user) 
+            return
+        const createTime = utils.toDate(time)
+        console.log('我发送给别人的信息#from:' + from + '#to:' + to)
+        business.creatChatDom(user, to, msg, createTime)
+        business.saveChatMsgByCache(from, to, msg, createTime)
+    },
+    createChatReceiveMsg: (from, to, msg, time) => {
+        // 我收到别人发给我的信息
+        const user = business.getUser(from)//别人
+        if (!user) 
+            return
+        const createTime = utils.toPhpDate(time)
+        console.log('我收到别人发给我的信息#to:' + to + '#from' + from)
+        business.creatChatDom(user, from, msg, createTime)
+        // business.saveChatMsgByCache(to, from, msg, createTime)
+        business.saveChatMsgByCache(from, to, msg, createTime)
+    },
+
+    creatChatDom: (user, uid, msg, createTime) => {
+        if (utils.isNull(uid))
+            return
+        const dom = $('<div class="chat-message"></div>')
+        const sexLogo =  1 == user.sex ? 'woman_logo.jpg' : 'man_logo.jpg'
+        $('<img class="message-avatar" src="static/images/' + sexLogo + '" alt="">').appendTo(dom)
+        const msdom  = $("<div class='message'></div>")
+        msdom.appendTo(dom)
+        const ud = $('<a class="message-author" href="#"> ' + user.username + '</a>')
+        ud.appendTo(msdom)
+        const td = $('<span class="message-date"> ' + createTime + ' </span>')
+        td.appendTo(msdom)
+        const md = $('<span class="message-content">' + msg + '</span>')
+        md.appendTo(msdom)
+        let suid = uid.replace("{", '')
+        suid = suid.replace("}", '')
+        $('#chatModel-' + suid + '   div.chat-discussion').append(dom)
+
+    },
+    saveChatMsgByCache: (from, to, msg, time) => {
+        let cache = new StoreCache(business.storage_key)
+        const key = from + ':' + to
+        console.log('key:', key);
+        let oldData = JSON.parse(cache.get(key)) || []
+        oldData.push([from, to, msg, time])
+        cache.set(key, JSON.stringify(oldData))
+    },
+    getUser: (uid) => {
+        let user = []
+        if (business.userList) {
+            for (let i = 0; i < business.userList.length; i++) {
+                if (uid === business.userList[i].uid) {
+                    user = business.userList[i]
+                    break
+                }
+            }
+        }
+        return user
+    }
 }
 
 class StoreCache {
@@ -508,6 +649,11 @@ class SocketIO {
             broadcastUsersCall: (ws, response) => {
                 business.createUsers(response.data.users);
                 return true;
+            },
+            chatCall: (ws, response) => {
+                const data = response.data
+                console.log(data);
+                business.createChatReceiveMsg(data.from, data.to, data.msg, data.time)
             }
         }
         this.init(options)
@@ -592,9 +738,9 @@ class SocketIO {
             let json = JSON.parse(data)
             let _self = this
             console.log('json data:', JSON.parse(data))
-            if (102 === json.code) { //广播更新用户
+            if (102 === json.code) { // 广播更新用户
                 return _self.RegisterCallFunc.broadcastUsersCall(self.ws, json);
-            } else if (100 === json.code) { //通常状态下成功返回
+            } else if (100 === json.code) { // 通常状态下成功返回
                 if (typeof _self.RegisterCallFunc.successCall === 'function') {
                     const res = _self.RegisterCallFunc.successCall(_self.ws, json)
                     _self.RegisterCallFunc.successCal = (ws, response) => {
@@ -606,6 +752,8 @@ class SocketIO {
                 }
 
                 return true
+            } else if (104 === json.code) { // 对传信息的成功操作（该状态码下可以是字符串、图片文件、word、txt、excel、pdf、压缩文件、音频文件、视频文件【2MB】）
+                return _self.RegisterCallFunc.chatCall(self.ws, json);
             } else { //通常状态下错误返回
                 if (typeof _self.RegisterCallFunc.errorCall === 'function') {
                     let res = _self.RegisterCallFunc.errorCall(_self.ws, json)
