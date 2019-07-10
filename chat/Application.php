@@ -92,6 +92,13 @@ IMG;
   		echo  PHP_EOL, PHP_EOL;
   	}
 
+
+    // get sys config
+    public static function getSwooleConfig(): array
+    {
+      return self::$config['swoole'];
+    }
+
     public static function getRedisConfig(): array
     {
       return self::$config['redis'];
@@ -105,7 +112,7 @@ IMG;
   	private function errorHandler()
   	{
   		if (SCHAT_DEBUG) {
-  			set_exception_handler(__CLASS__ . '::exceptionHandler');
+  		    set_exception_handler(__CLASS__ . '::exceptionHandler');
   		} else {
   		    error_reporting(E_ALL);
   		    ini_set('display_errors','Off');

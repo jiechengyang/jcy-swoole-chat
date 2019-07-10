@@ -8,6 +8,7 @@
 namespace chat\libs;
 
 use \swoole_table;
+use \chat\Application as JSWOOLE;
 
 class FdMapping
 {
@@ -21,10 +22,13 @@ class FdMapping
 
     private $userConfig;
 
+    private $swoolConfig;
+
     public function __construct(bool $enableCoroutine = false) 
     {
-        $redisConfig = \chat\Application::getRedisConfig();
-        $this->userConfig = \chat\Application::getUserConfig();
+        $redisConfig = JSWOOLE::getRedisConfig();
+        $this->userConfig = JSWOOLE::getUserConfig();
+        $this->swoolConfig = JSWOOLE::getSwooleConfig();
         if ($enableCoroutine) {
             $this->goRoutineRedis($redisConfig);
         } else {
@@ -275,6 +279,12 @@ class FdMapping
         return true;
     }
 
+    public function delCurrentFd(int $fd)
+    {
+        $this->redis->del(self::MAP_FD_UID_PREFIX . $fd);
+        return true;
+    } 
+
     /**
      * 这个例子对服务器做了基准测试（benchmark），检测服务器能承受多高的 cost
      * 在不明显拖慢服务器的情况下可以设置最高的值
@@ -327,14 +337,28 @@ class FdMapping
 
     public function saveChatMsg($from, $to, $msg)
     {
-        $table = new swoole_table(1024);
-        $table->column('from', swoole_table::TYPE_STRING, 64);
-        // $table->column('current_from_fd', swoole_table::INT);
-        $table->column('to', swoole_table::TYPE_STRING, 64);
-        // $table->column('current_to_fd', swoole_table::INT);
-        $table->column('msg', swoole_table::TYPE_STRING);
-        $table->create();
-        $table['chat.msg'] = array('from' => $from, 'to' => $to, 'msg' => $msg);
-        return $table;
+        // $table = new swoole_table(1024);
+        // $table->column('from', swoole_table::TYPE_STRING, 64);
+        // // $table->column('current_from_fd', swoole_table::INT);
+        // $table->column('to', swoole_table::TYPE_STRING, 64);
+        // // $table->column('current_to_fd', swoole_table::INT);
+        // $table->column('msg', swoole_table::TYPE_STRING);
+        // $table->create();
+        // $table['chat.msg'] = array('from' => $from, 'to' => $to, 'msg' => $msg);
+        // return $table;
+        $path = $this->swoolConfig['cache']['path'];
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
+        
+        $filename = md5($from . ':' . $to) . '.data';
+        $file = $path . DIRECTORY_SEPARATOR . $filename;
+        $data = json_encode([$msg, time()]);
+        file_put_contents($file, $data . PHP_EOL, FILE_APPEND);
+    }
+
+    public function delChatMsg($from, $to)
+    {
+        unlink(md5($from . ':' . $to) . '.data');
     }
 }
