@@ -80,7 +80,7 @@ class RedisChatClient implements BaseClient
 			case 'logout':
 				return $this->__logout($ws, $frame->fd, $data);
 			case 'msg':
-				return $this->__chat($ws, $frame->id, $data);
+				return $this->__chat($ws, $frame->fd, $data);
 			default:
 				return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
 		}
@@ -88,25 +88,39 @@ class RedisChatClient implements BaseClient
 
 	private function __chat($ws, int $fd, array $data)
 	{
+		// task process
 		// if (empty($data['from'])) {
 		// 	return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
 		// }
 		if (empty($data['to'])) {
-			return $this->disconnect($ws, $frame->fd, "The listener doesn't exist.");
+			return $this->disconnect($ws, $fd, "The listener doesn't exist.");
 		}
 
-		if (empty($data['msg'])) {
-			return $this->disconnect($ws, $frame->fd, "Please input msg");
+		if (empty($data['body'])) {
+			return $this->disconnect($ws, $fd, "Please input msg");
 		}
 
-		$uid = self::$FdMapping->getFdByUid($fd);
+		$uid = self::$FdMapping->getUidByFd($fd);
 		if (empty($uid)) {
-			return $this->disconnect($ws, $frame->fd, "The Sender doesn't exist.");
+			return $this->disconnect($ws, $fd, "The Sender doesn't exist.");
 		}
 
-		//online send
-		//offline save
+		// $to_uid = self::$FdMapping->get
+		if ( ( $to_fd = $this->__checkisOnline( $data['to'] ) ) !== false ) {
+			//online send
+			return $this->successSend($ws, $to_fd, [
+				'from' => $uid,
+				'to' => $data['to'],
+				'msg' => $data['body'],
+				'time' => time()
+			], 'send msg success', 104);
+		} else {
+			//offline save
+			self::$FdMapping->saveChatMsg($uid, $data['to'], $data['body']);
+		}
 
+		return $this->successSend($ws, $to_fd, [
+		], 'send msg success', 104);
 	}
 
 	private function __sign($ws, int $fd, array $data)
@@ -127,7 +141,7 @@ class RedisChatClient implements BaseClient
 			// 下线通知：您的账号已在别的设备登录-code 107
 			$rs = $this->disconnect($ws, $old_fd, "Offline notification: your account is logged on to another device", 107);
 			// 清理过期/已断开的连接
-			$this->__clearOldSocket($ws, $old_fd, $user['uid']);
+			$res = $this->__clearOldSocket($ws, $old_fd, $user['uid']);
 		}
 
 		// 设置uid与fd对应关系
@@ -139,6 +153,7 @@ class RedisChatClient implements BaseClient
 			$this->__broadcast($ws, $fd);
 		});
 
+		//send olddata and del olddata
 		return $this->successSend($ws, $fd, [
 			'uid' => $user['uid'],
 			'users' => self::$FdMapping->getSafeUserList(),
@@ -176,7 +191,7 @@ class RedisChatClient implements BaseClient
 			return $this->disconnect($ws, $fd, 'Login failure has expired');
 		}
 
-		self::$FdMapping->delFd($fd, $data['uid']);
+		$res = self::$FdMapping->delFd($fd, $data['uid']);
 
 		// 设置uid与fd对应关系
 		self::$FdMapping->uidBindFd($data['uid'], $fd);
@@ -215,7 +230,7 @@ class RedisChatClient implements BaseClient
 		// foreach ($fds as $fd) {
 		// 	!$ws->exist($fd) && self::$FdMapping->delFd($fd);
 		// }
-		!$ws->exist($old_fd) && self::$FdMapping->delFd($old_fd, $uid);
+		return !$ws->exist($old_fd) ? false : self::$FdMapping->delFd($old_fd, $uid);
 	}
 
 	protected function successSend($ws, int $fd, array $data = [], string $msg = 'ok', int $code = 100)
@@ -231,6 +246,7 @@ class RedisChatClient implements BaseClient
 	public function onClose($ws, $fd) 
 	{
  		self::showMsg('showWarning', "client-{$fd} is closed");
+ 		self::$FdMapping->delCurrentFd($fd);
 	}
 
 	private static function showMsg($func, $msg)
