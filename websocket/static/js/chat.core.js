@@ -355,7 +355,6 @@ let business = {
                 })
                 business.socketIO.RegisterCallFunc.successCall = (ws, response) => {
                     const data = response.data
-                    console.log(data)
                     business.createUsers(data.users)
                     business.userList = data.users
                     return true;
@@ -447,9 +446,6 @@ let business = {
         }        
     },
     chat: (uid) => {
-        // from = from || cookie.get(business.session_key);
-        // static/images/woman_logo.jpg
-        // let html = $("#chatModel").html()
         const user = business.getUser(uid)
         if (!user) return
         const sex_logo = 1 == user.sex ? 'static/images/woman_logo.jpg' : 'static/images/man_logo.jpg'
@@ -461,18 +457,18 @@ let business = {
                 '<div class="ibox-title">' + 
                     '<img class="message-avatar" src="' + sex_logo + '" alt="">' +
                 '</div>' +
-                '<div class="ibox-content">' +
-                    '<div class="row">' +
+                '<div class="ibox-content" style="height:100%">' +
+                    '<div class="row chat-msg-box">' +
                         '<div class="col-md-12 ">' +
                             '<div class="chat-discussion">' +
                             '</div>' +
                         '</div>' +
                     '</div>' +
-                    '<div class="row">' + 
+                    '<div class="chat-input-box">' + 
                         '<div class="col-sm-12">' +
                             '<div class="chat-message-form">' +
                                 '<div class="form-group">' +
-                                    '<textarea class="form-control message-input" name="message" placeholder="输入消息内容，按回车键发送" onkeydown="business.sendMsg(this)" data-to="' + uid + '"></textarea>' +
+                                    '<textarea class="form-control message-input" name="message" placeholder="输入消息内容，按回车键发送" onkeydown="business.sendMsg(event, this)" data-to="' + uid + '"></textarea>' +
                                 '</div>' +
                             '</div>' +
                         '</div>' + 
@@ -490,54 +486,58 @@ let business = {
             closeBtn: 1,
             // btn: ['火速围观', '残忍拒绝'],
             // btnAlign: 'c',
-            // moveType: 1, //拖拽模式，0或者1,                      
+            // moveType: 1, //拖拽模式，0或者1,              
         }
 
         let chatLayer = utils.openPage(1, title, html, params)
         let muid = cookie.get(business.session_key)
-        // {F82D2637-4B3F-8561-A95B-6EF6CDBC4D6F} {1CC18625-2759-01EA-1705-0D4204FF0CA2}
-        // 我发送别人
         let msgs = business.getStorageMsg(muid, uid)
-        console.log('我发送别人:' + msgs);
+        console.log('我俩的记录:' + msgs);
         if (!utils.isNull(msgs)) {
             for (let i = 0; i < msgs.length; i++) {
                 const user = business.getUser(msgs[i][0])
                 if (!user) continue
                 console.log(msgs[i]);
-                business.creatChatDom(user, msgs[i][1], msgs[i][2], msgs[i][3])
+                business.creatChatDom(user, uid, msgs[i][2], msgs[i][3])
             }
         }
         // 我收到
-        msgs = business.getStorageMsg(uid, muid)
-        console.log('我收到:' + msgs);
-        if (!utils.isNull(msgs)) {
-            for (let i = 0; i < msgs.length; i++) {
-                const user = business.getUser(msgs[i][0])
-                if (!user) continue
-                business.creatChatDom(user, msgs[i][0], msgs[i][2], msgs[i][3])
-            }
-        }
+        // let msgs = business.getStorageMsg(uid, muid)
+        // console.log('我收到:' + msgs);
+        // if (!utils.isNull(msgs)) {
+        //     for (let i = 0; i < msgs.length; i++) {
+        //         const user = business.getUser(msgs[i][1])
+        //         if (!user) continue
+        //         business.creatChatDom(user, msgs[i][0], msgs[i][2], msgs[i][3])
+        //     }
+        // }
     },
     getStorageMsg: (from, to) => {
         const cache = new StoreCache(business.storage_key)
         const key = from + ':' + to
         return JSON.parse(cache.get(key))
     },
-    sendMsg: (dom) => {
+    sendMsg: (e, dom) => {
         if (!business.isLogin()) {
             return false
         }
         let msg = utils.trim($(dom).val())
         if (event.keyCode === 13 && msg) {
-            // console.log(msg, $(dom).data('to'))
-            business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
+            e.preventDefault()
+            if (msg.length > 1000) {
+                layer.msg("字数超过限制，最多只能发送1000字", {icon: 5})
+                // msg = msg.substring(0, 1000)
+                return false
+            }
+
             business.socketIO.ws.send(JSON.stringify({
                 type: 'msg',
                 // from: from,
                 to: $(dom).data('to'),
                 body: msg
             }))
-            $(dom).val('')
+            business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
+            dom.value = ''
         }
     },
     createChatSendMsg: (from, to, msg, time) => {
@@ -559,7 +559,8 @@ let business = {
         console.log('我收到别人发给我的信息#to:' + to + '#from' + from)
         business.creatChatDom(user, from, msg, createTime)
         // business.saveChatMsgByCache(to, from, msg, createTime)
-        business.saveChatMsgByCache(from, to, msg, createTime)
+        // business.saveChatMsgByCache(from, to, msg, createTime)
+        business.saveChatMsgByCache(to, from, msg, createTime, 2)
     },
 
     creatChatDom: (user, uid, msg, createTime) => {
@@ -568,7 +569,7 @@ let business = {
         const dom = $('<div class="chat-message"></div>')
         const sexLogo =  1 == user.sex ? 'woman_logo.jpg' : 'man_logo.jpg'
         $('<img class="message-avatar" src="static/images/' + sexLogo + '" alt="">').appendTo(dom)
-        const msdom  = $("<div class='message'></div>")
+        const msdom = $("<div class='message'></div>")
         msdom.appendTo(dom)
         const ud = $('<a class="message-author" href="#"> ' + user.username + '</a>')
         ud.appendTo(msdom)
@@ -581,12 +582,18 @@ let business = {
         $('#chatModel-' + suid + '   div.chat-discussion').append(dom)
 
     },
-    saveChatMsgByCache: (from, to, msg, time) => {
+    saveChatMsgByCache: (from, to, msg, time, type) => {
+        type = type || 1
         let cache = new StoreCache(business.storage_key)
         const key = from + ':' + to
-        console.log('key:', key);
         let oldData = JSON.parse(cache.get(key)) || []
-        oldData.push([from, to, msg, time])
+        if (1 === type) {
+            oldData.push([from, to, msg, time])
+        } else {
+            oldData.push([to, from, msg, time])
+        }
+        console.log('cachekey:', key)
+        console.log('oldData:', oldData)
         cache.set(key, JSON.stringify(oldData))
     },
     getUser: (uid) => {
@@ -652,7 +659,6 @@ class SocketIO {
             },
             chatCall: (ws, response) => {
                 const data = response.data
-                console.log(data);
                 business.createChatReceiveMsg(data.from, data.to, data.msg, data.time)
             }
         }
@@ -737,7 +743,6 @@ class SocketIO {
             let data = event.data
             let json = JSON.parse(data)
             let _self = this
-            console.log('json data:', JSON.parse(data))
             if (102 === json.code) { // 广播更新用户
                 return _self.RegisterCallFunc.broadcastUsersCall(self.ws, json);
             } else if (100 === json.code) { // 通常状态下成功返回

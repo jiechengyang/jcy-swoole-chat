@@ -31,7 +31,9 @@
 .chat-discussion {
     background: #eee;
     padding: 15px;
-    height: 400px;
+    min-height: 400px;
+    /*overflow-y: scroll;*/
+    /*height: 400px;*/
     overflow-y: auto;
 }
 .chat-message {
@@ -74,7 +76,7 @@ a {
     position: relative;
     border-radius: 4px;
 }
-.chat-discussion .chat-message:nth-child(2n+1) .message-avatar {
+/*.chat-discussion .chat-message:nth-child(2n+1) .message-avatar {
     float: left;
     margin-right: 10px;
 }
@@ -93,6 +95,14 @@ a {
 .chat-discussion .chat-message:nth-child(2n) .message {
     text-align: right;
     margin-right: 55px;
+}*/
+.chat-discussion .chat-message:nth-child(n) .message-avatar {
+    float: left;
+    margin-right: 10px;
+}
+.chat-discussion .chat-message:nth-child(n) .message {
+    text-align: left;
+    margin-left: 55px;
 }
 .message-date {
     font-size: 10px;
@@ -101,10 +111,7 @@ a {
 .message-content {
     display: block;
 }
-.chat-msg {
-    min-height: 400px;
-    overflow-y: scroll;
-}
+
 .message-avatar {
     height: 48px;
     width: 48px;
@@ -199,4 +206,12 @@ label.required:after {
     height: 30px;
     line-height: 30px;
     display: inline-block;
+}
+.chat-msg-box {
+    height: 430px;
+    overflow: scroll;
+}
+.chat-input-box {
+    position: static;
+    /*height: 100px;*/
 }
