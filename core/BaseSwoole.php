@@ -85,6 +85,7 @@ class BaseSwoole
 
         if(!empty($this->config['task_worker_num'])) {
         	$this->server->on('Task', [$this->client, 'onTask']);
+        	$this->server->on('Finish', [$this->client, 'onFinish']);
         }
 
         $this->server->start();

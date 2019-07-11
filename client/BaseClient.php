@@ -12,7 +12,8 @@ interface BaseClient
 	public function onStart($server);
 	public function onManagerStart(\swoole_server $serv);
 	public function onWorkerStart(\swoole_server $server, int $worker_id);
-	public function onTask(\swoole_server $serv, int $task_id, int $src_worker_id, mixed $data);
+	public function onTask($serv, int $task_id, int $src_worker_id, $data);//\swoole_server 
+	public function onFinish($serv, int $task_id, $data);
 	public function onConnect($server, int $fd, int $reactorId);
 	public function onOpen($ws, $request);
 	public function onMessage($ws, $frame);

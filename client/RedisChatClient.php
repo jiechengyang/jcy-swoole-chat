@@ -33,9 +33,80 @@ class RedisChatClient implements BaseClient
 		// echo PHP_EOL, 'event: onWorkerStart', PHP_EOL;
 	}
 
-	public function onTask(\swoole_server $serv, int $task_id, int $src_worker_id, mixed $data)
+	//\swoole_server 
+	public function onTask($serv, int $task_id, int $src_worker_id, $data)
 	{
+	    $fd = $data['fd'];
+	    $data = $data['data'];
+		if (empty($data['to'])) {
+			$serv->finish([
+				'fd' => $fd,
+				'msg' => "The listener doesn't exist."
+			]);
+		}
 
+		if (empty($data['body'])) {
+			$serv->finish([
+				'fd' => $fd,
+				'msg' => "Please input msg"
+			]);
+			// return false;
+		}
+
+		if (!self::$FdMapping) {
+			self::$FdMapping = new  \chat\libs\FdMapping(false);
+		}
+		$uid = self::$FdMapping->getUidByFd($fd);
+		if (empty($uid)) {
+			$serv->finish([
+				'fd' => $fd,
+				'msg' => "Please input msg"
+			]);
+			// return false;
+		}
+
+		if ( ( $to_fd = $this->__checkisOnline( $data['to'] ) ) !== false ) {
+			$serv->finish([
+				'fd' => $to_fd,
+				'da' => [
+					'from' => $uid,
+					'to' => $data['to'],
+					'msg' => $data['body'],
+					'time' => time()
+				],
+				'msg' => 'send msg success',
+				'code' => 104
+			]);
+			// return true;
+		} else {
+			//offline save
+			self::$FdMapping->saveChatMsg($uid, $data['to'], $data['body']);
+		}
+
+	    $serv->finish([
+	    	'fd' => $to_fd,
+	    	'msg' => 'send msg success',
+	    	'code' => 104
+	    ]);
+	    // return true;
+	}
+
+	public function onFinish($serv, int $task_id, $data)
+	{
+		if (empty($data['code'])) {
+			return $this->disconnect($serv, $data['fd'], $data['msg']);
+		} else {
+			$da = [];
+			if (!empty($data['da'])) {
+				$da = [
+					'from' => $data['da']['from'],
+					'to' => $data['da']['to'],
+					'msg' => $data['da']['msg'],
+					'time' => $data['da']['time']
+				];
+			} 
+			return $this->successSend($serv, $data['fd'], $da, 'send msg success', $data['code']);
+		}
 	}
 
 	public function onConnect($server, int $fd, int $reactorId) 
@@ -92,6 +163,8 @@ class RedisChatClient implements BaseClient
 		// if (empty($data['from'])) {
 		// 	return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
 		// }
+		$task_id = $ws->task(['fd' => $fd, 'data' => $data], 0);
+		return;
 		if (empty($data['to'])) {
 			return $this->disconnect($ws, $fd, "The listener doesn't exist.");
 		}
