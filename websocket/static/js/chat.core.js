@@ -6,7 +6,22 @@
  */
 "use strict"
 
+/* 重写window属性 */
+window.onbeforeunload = onbeforeunload_handler;
+window.onunload = onunload_handler;
+
+function onbeforeunload_handler() {
+    var warning = "确认退出?";
+    return warning;
+}
+
+function onunload_handler() {
+    var warning = "确认退出?";
+}
+
 window.alert = layer.alert
+
+/* 重写window属性 */
 const cookie = {
     set: function(key, value, delay) { //设置cookie方法
         delay = delay || "7d";
@@ -181,19 +196,19 @@ let utils = {
         context.attach(id, opts)
     },
     toPhpDate: (phpTimestamp) => {
-        let str = parseInt(phpTimestamp) * 1000//将php时间戳转化为整形并乘以1000
+        let str = parseInt(phpTimestamp) * 1000 //将php时间戳转化为整形并乘以1000
         return utils.toDate(str)
     },
     toDate: (time) => {
         let newDate = new Date(time)
-        let year = newDate.getUTCFullYear()//取年份
-        let month = newDate.getUTCMonth() + 1//取月份
-        let nowday = newDate.getUTCDate()//取天数
-        let hours = newDate.getHours()//取小时
-        let minutes = newDate.getMinutes()//取分钟
-        let seconds = newDate.getSeconds()//取秒
+        let year = newDate.getUTCFullYear() //取年份
+        let month = newDate.getUTCMonth() + 1 //取月份
+        let nowday = newDate.getUTCDate() //取天数
+        let hours = newDate.getHours() //取小时
+        let minutes = newDate.getMinutes() //取分钟
+        let seconds = newDate.getSeconds() //取秒
 
-        return year + "-" + month + "-" + nowday + " " + hours + ":" + minutes + ":" + seconds        
+        return year + "-" + month + "-" + nowday + " " + hours + ":" + minutes + ":" + seconds
     }
 }
 
@@ -391,18 +406,16 @@ let business = {
             }
             // 右键菜单
             // utils.onContextmenu('#users-list')
-            utils.onContextmenu('#users-list .self_uid', [
-                {
-                    text: '退出登录',
-                    href: '#',
-                    action: function(e) {
-                        e.preventDefault()
-                        layer.confirm('确认退出吗?', {icon: 3, title:'提示'}, function(index) {
-                            business.logout(index)
-                        })
-                    }
+            utils.onContextmenu('#users-list .self_uid', [{
+                text: '退出登录',
+                href: '#',
+                action: function(e) {
+                    e.preventDefault()
+                    layer.confirm('确认退出吗?', { icon: 3, title: '提示' }, function(index) {
+                        business.logout(index)
+                    })
                 }
-            ])
+            }])
         }
     },
     contextmenu: (id, uid) => {
@@ -411,22 +424,21 @@ let business = {
         })
 
         const opts = [{
-                header: '菜单列表'
-            }, {
-                text: '发起聊天',
-                href: 'javascript:;',
-                action: function(e) {
-                    e.preventDefault()
-                    business.chat(uid)
-                }
-            }, {
-                text: '互加好友',
-                href: '#'
-            }, {
-                text: '设为特别关心',
-                href: '#'
+            header: '菜单列表'
+        }, {
+            text: '发起聊天',
+            href: 'javascript:;',
+            action: function(e) {
+                e.preventDefault()
+                business.chat(uid)
             }
-        ]
+        }, {
+            text: '互加好友',
+            href: '#'
+        }, {
+            text: '设为特别关心',
+            href: '#'
+        }]
 
         context.attach(id, opts)
     },
@@ -436,14 +448,14 @@ let business = {
         cookie.delete(business.session_key)
         business.socketIO.ws.send(JSON.stringify({
             type: 'logout',
-            uid: uid            
+            uid: uid
         }))
 
         business.socketIO.RegisterCallFunc.successCall = (ws, response) => {
             ws.close()
             location.reload()
             return true
-        }        
+        }
     },
     chat: (uid) => {
         const user = business.getUser(uid)
@@ -454,26 +466,26 @@ let business = {
         suid = suid.replace("}", '')
         let html = '<div  id="chatModel-' + suid + '">' +
             '<div class="ibox">' +
-                '<div class="ibox-title">' + 
-                    '<img class="message-avatar" src="' + sex_logo + '" alt="">' +
-                '</div>' +
-                '<div class="ibox-content" style="height:100%">' +
-                    '<div class="row chat-msg-box">' +
-                        '<div class="col-md-12 ">' +
-                            '<div class="chat-discussion">' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="chat-input-box">' + 
-                        '<div class="col-sm-12">' +
-                            '<div class="chat-message-form">' +
-                                '<div class="form-group">' +
-                                    '<textarea class="form-control message-input" name="message" placeholder="输入消息内容，按回车键发送" onkeydown="business.sendMsg(event, this)" data-to="' + uid + '"></textarea>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' + 
-                    '</div>' +
-                '</div>' +
+            '<div class="ibox-title">' +
+            '<img class="message-avatar" src="' + sex_logo + '" alt="">' +
+            '</div>' +
+            '<div class="ibox-content" style="height:100%">' +
+            '<div class="row chat-msg-box">' +
+            '<div class="col-md-12 ">' +
+            '<div class="chat-discussion">' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="chat-input-box">' +
+            '<div class="col-sm-12">' +
+            '<div class="chat-message-form">' +
+            '<div class="form-group">' +
+            '<textarea class="form-control message-input" name="message" placeholder="输入消息内容，按回车键发送" onkeydown="business.sendMsg(event, this)" data-to="' + uid + '"></textarea>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
             '</div>' +
             '</div>';
         const params = {
@@ -492,12 +504,11 @@ let business = {
         let chatLayer = utils.openPage(1, title, html, params)
         let muid = cookie.get(business.session_key)
         let msgs = business.getStorageMsg(muid, uid)
-        console.log('我俩的记录:' + msgs);
+        // console.log('我俩的记录:' + msgs);
         if (!utils.isNull(msgs)) {
             for (let i = 0; i < msgs.length; i++) {
                 const user = business.getUser(msgs[i][0])
                 if (!user) continue
-                console.log(msgs[i]);
                 business.creatChatDom(user, uid, msgs[i][2], msgs[i][3])
             }
         }
@@ -525,7 +536,7 @@ let business = {
         if (event.keyCode === 13 && msg) {
             e.preventDefault()
             if (msg.length > 1000) {
-                layer.msg("字数超过限制，最多只能发送1000字", {icon: 5})
+                layer.msg("字数超过限制，最多只能发送1000字", { icon: 5 })
                 // msg = msg.substring(0, 1000)
                 return false
             }
@@ -536,27 +547,36 @@ let business = {
                 to: $(dom).data('to'),
                 body: msg
             }))
-            business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
-            dom.value = ''
+
+            const load = layer.load()
+            business.socketIO.RegisterCallFunc.successCall = (ws, response) => {
+                business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
+                dom.value = ''
+                layer.close(load)
+                return true;
+            }
+            // business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
+            // dom.value = ''
         }
     },
     createChatSendMsg: (from, to, msg, time) => {
         // 我发送给别人的信息
         const user = business.getUser(from)
-        if (!user) 
+        if (!user)
             return
         const createTime = utils.toDate(time)
-        console.log('我发送给别人的信息#from:' + from + '#to:' + to)
+        // console.log('我发送给别人的信息#from:' + from + '#to:' + to)
         business.creatChatDom(user, to, msg, createTime)
         business.saveChatMsgByCache(from, to, msg, createTime)
     },
     createChatReceiveMsg: (from, to, msg, time) => {
         // 我收到别人发给我的信息
-        const user = business.getUser(from)//别人
-        if (!user) 
+        const user = business.getUser(from) //别人
+        if (!user)
             return
+        business.chat(from)
         const createTime = utils.toPhpDate(time)
-        console.log('我收到别人发给我的信息#to:' + to + '#from' + from)
+        // console.log('我收到别人发给我的信息#to:' + to + '#from' + from)
         business.creatChatDom(user, from, msg, createTime)
         // business.saveChatMsgByCache(to, from, msg, createTime)
         // business.saveChatMsgByCache(from, to, msg, createTime)
@@ -567,7 +587,7 @@ let business = {
         if (utils.isNull(uid))
             return
         const dom = $('<div class="chat-message"></div>')
-        const sexLogo =  1 == user.sex ? 'woman_logo.jpg' : 'man_logo.jpg'
+        const sexLogo = 1 == user.sex ? 'woman_logo.jpg' : 'man_logo.jpg'
         $('<img class="message-avatar" src="static/images/' + sexLogo + '" alt="">').appendTo(dom)
         const msdom = $("<div class='message'></div>")
         msdom.appendTo(dom)
@@ -583,6 +603,8 @@ let business = {
 
     },
     saveChatMsgByCache: (from, to, msg, time, type) => {
+        if (utils.isNull(from) || utils.isNull(to))
+            return
         type = type || 1
         let cache = new StoreCache(business.storage_key)
         const key = from + ':' + to
@@ -592,8 +614,8 @@ let business = {
         } else {
             oldData.push([to, from, msg, time])
         }
-        console.log('cachekey:', key)
-        console.log('oldData:', oldData)
+        // console.log('cachekey:', key)
+        // console.log('oldData:', oldData)
         cache.set(key, JSON.stringify(oldData))
     },
     getUser: (uid) => {
