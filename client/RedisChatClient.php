@@ -15,6 +15,8 @@ class RedisChatClient implements BaseClient
 {
 	private static $FdMapping = null;
 
+	const BROADCAT_TYPE = 1;
+
 	public function onStart($server) 
 	{
         self::showMsg('display', "Server: start.Swoole version is [".SWOOLE_VERSION."]");
@@ -33,80 +35,29 @@ class RedisChatClient implements BaseClient
 		// echo PHP_EOL, 'event: onWorkerStart', PHP_EOL;
 	}
 
-	//\swoole_server 
-	public function onTask($serv, int $task_id, int $src_worker_id, $data)
+	// 此功能用于将慢速的任务异步地去执行，比如一个聊天室服务器，可以用它来进行发送广播
+	public function onTask($ws, int $task_id, int $src_worker_id, $data)
 	{
-	    $fd = $data['fd'];
-	    $data = $data['data'];
-		if (empty($data['to'])) {
-			$serv->finish([
-				'fd' => $fd,
-				'msg' => "The listener doesn't exist."
-			]);
+		self::showMsg('display', "#{$ws->worker_id}\tonTask: [PID={$ws->worker_pid}]: task_id=$task_id");
+		$fd = $data['fd'];
+		$type = $data['type'];
+		$fdMapping = null;
+		if (!$fdMapping) {
+			$fdMapping = new \chat\libs\FdMapping(false);
 		}
 
-		if (empty($data['body'])) {
-			$serv->finish([
-				'fd' => $fd,
-				'msg' => "Please input msg"
-			]);
-			// return false;
-		}
-
-		if (!self::$FdMapping) {
-			self::$FdMapping = new  \chat\libs\FdMapping(false);
-		}
-		$uid = self::$FdMapping->getUidByFd($fd);
-		if (empty($uid)) {
-			$serv->finish([
-				'fd' => $fd,
-				'msg' => "Please input msg"
-			]);
-			// return false;
-		}
-
-		if ( ( $to_fd = $this->__checkisOnline( $data['to'] ) ) !== false ) {
-			$serv->finish([
-				'fd' => $to_fd,
-				'da' => [
-					'from' => $uid,
-					'to' => $data['to'],
-					'msg' => $data['body'],
-					'time' => time()
-				],
-				'msg' => 'send msg success',
-				'code' => 104
-			]);
-			// return true;
-		} else {
-			//offline save
-			self::$FdMapping->saveChatMsg($uid, $data['to'], $data['body']);
-		}
-
-	    $serv->finish([
-	    	'fd' => $to_fd,
-	    	'msg' => 'send msg success',
-	    	'code' => 104
-	    ]);
-	    // return true;
+		$res = $this->__broadcast($ws, $fd, $type, $fdMapping);
+		$ws->finish([
+			'fd' => $fd,
+			'res' => $res,
+			'type' => $type
+		]);
 	}
 
 	public function onFinish($serv, int $task_id, $data)
 	{
-		if (empty($data['code'])) {
-			return $this->disconnect($serv, $data['fd'], $data['msg']);
-		} else {
-			$da = [];
-			if (!empty($data['da'])) {
-				$da = [
-					'from' => $data['da']['from'],
-					'to' => $data['da']['to'],
-					'msg' => $data['da']['msg'],
-					'time' => $data['da']['time']
-				];
-			} 
-			return $this->successSend($serv, $data['fd'], $da, 'send msg success', $data['code']);
-		}
+		self::showMsg('display', "Task#$task_id finished");
+		$fd = $data['fd'];
 	}
 
 	public function onConnect($server, int $fd, int $reactorId) 
@@ -163,8 +114,6 @@ class RedisChatClient implements BaseClient
 		// if (empty($data['from'])) {
 		// 	return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
 		// }
-		$task_id = $ws->task(['fd' => $fd, 'data' => $data], 0);
-		return;
 		if (empty($data['to'])) {
 			return $this->disconnect($ws, $fd, "The listener doesn't exist.");
 		}
@@ -181,7 +130,7 @@ class RedisChatClient implements BaseClient
 		// $to_uid = self::$FdMapping->get
 		if ( ( $to_fd = $this->__checkisOnline( $data['to'] ) ) !== false ) {
 			//online send
-			return $this->successSend($ws, $to_fd, [
+			$r = $this->successSend($ws, $to_fd, [
 				'from' => $uid,
 				'to' => $data['to'],
 				'msg' => $data['body'],
@@ -190,10 +139,10 @@ class RedisChatClient implements BaseClient
 		} else {
 			//offline save
 			self::$FdMapping->saveChatMsg($uid, $data['to'], $data['body']);
+			$r  = $this->successSend($ws, $to_fd, ['offline' => 1], 'send msg to_fd success', 104);
 		}
 
-		return $this->successSend($ws, $to_fd, [
-		], 'send msg success', 104);
+		return $this->successSend($ws, $fd, [], 'send msg success - ' . $fd);
 	}
 
 	private function __sign($ws, int $fd, array $data)
@@ -221,11 +170,11 @@ class RedisChatClient implements BaseClient
 		self::$FdMapping->uidBindFd($user['uid'], $fd);
 		self::$FdMapping->fdBindUid($fd, $user['uid']);
 		self::$FdMapping->setUserLoginLasted($user['uid'], time());
-		Timer::after(500, function() use ($ws, $fd) {
-			// 广播更新用户
-			$this->__broadcast($ws, $fd);
-		});
-
+		// Timer::after(500, function() use ($ws, $fd) {
+		// 	// 广播更新用户
+		// 	$this->__broadcast($ws, $fd);
+		// });
+		$task_id = $ws->task(['fd' => $fd, 'type' => self::BROADCAT_TYPE], 0);
 		//send olddata and del olddata
 		return $this->successSend($ws, $fd, [
 			'uid' => $user['uid'],
@@ -284,15 +233,20 @@ class RedisChatClient implements BaseClient
 	}
 
 	// 广播	
-	private function __broadcast($ws, $fd, int $type = 1)
+	private function __broadcast($ws, $fd, int $type = 1, $fdMapping = null)
 	{
+		if ($fdMapping == null) {
+			$fdMapping = self::$FdMapping;
+		}
 		if ( 1 === $type ) {
-			$users = self::$FdMapping->getSafeUserList();
+			$users = $fdMapping->getSafeUserList();
 			foreach ($users as $user) {
-				$sfd = self::$FdMapping->getFdByUid($user['uid']);
+				$sfd = $fdMapping->getFdByUid($user['uid']);
 				if ($sfd === $fd || !$ws->exist($sfd)) continue;
 		    	$this->successSend($ws, $sfd, ['users' => $users], 'lasted userlist', 102);
 			}
+
+			return true;
 		}
 	}
 
