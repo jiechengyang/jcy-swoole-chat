@@ -8,7 +8,7 @@
 namespace chat\libs;
 
 use \swoole_table;
-use \chat\Application as JSWOOLE;
+use chat\Application as JSWOOLE;
 
 class FdMapping
 {
@@ -197,13 +197,13 @@ class FdMapping
     // }
 
     //uid与fd对应，支持多端抢占式登录/有登录会话机制,所以一个放弃多页面
-    public function uidBindFd(string $uid, int $fid, int $expire = 7 * 24 * 3600)
+    public function uidBindFd(string $uid, int $fid, int $expire = 24 * 3600)
     {
         $this->redis->setex(self::MAP_UID_FD_PREFIX . $uid, $expire, $fid);
     }
 
     // fd与uid对应
-    public function fdBindUid(int $fid, string $uid, int $expire = 7 * 24 * 3600)
+    public function fdBindUid(int $fid, string $uid, int $expire = 24 * 3600)
     {
         $this->redis->setex(self::MAP_FD_UID_PREFIX . $fid, $expire, $uid);
         // OR next

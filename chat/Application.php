@@ -51,7 +51,7 @@ class Application
   		$this->draw();
   		$params = getopt('m:d:');
   		if ( empty($params['m']) || (! array_key_exists( $params['m'], self::$modes) ) ) {
-  			Color::showError('please chose: ImClient/SwooleTableChatClient/ImClient three modes');
+  			Color::showError('please chose: RedisChatClient/SwooleTableChatClient/ImClient three modes');
   			echo PHP_EOL, PHP_EOL;
   			return;
   		}
@@ -107,6 +107,11 @@ IMG;
     public static function getUserConfig(): array
     {
       return self::$config['user'];
+    }
+
+    public static function getAesConfig(): array
+    {
+      return self::$config['aes'];
     }
 
   	private function errorHandler()

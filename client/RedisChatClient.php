@@ -10,6 +10,8 @@ namespace chat\client;
 use chat\helper\Color;
 use \Swoole\Timer;
 use \swoole_table;
+use chat\libs\Aes;
+use chat\Application as JSWOOLE;
 
 class RedisChatClient implements BaseClient
 {
@@ -85,7 +87,10 @@ class RedisChatClient implements BaseClient
 	public function onMessage($ws, $frame) 
 	{
 		self::showMsg('showInfo', "Message: {$frame->data}");
-		$data = json_decode( trim($frame->data), true );
+		list('key' => $key, 'iv' => $iv) = JSWOOLE::getAesConfig();
+		$aes = Aes::getInstance($key, 'aes-128-cbc', $iv, OPENSSL_ZERO_PADDING);// ($key, 'aes-256-cbc', $iv, true) OPENSSL_ZERO_PADDING
+		$str = $aes->decrypt( trim( $frame->data ) );// $aes->decryptMd5( trim( $frame->data ) );
+		$data = json_decode( rtrim($str, "\0"), true );
 		if ( empty($data) || empty($data['type']) ) {
 			return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
 		}
@@ -127,7 +132,6 @@ class RedisChatClient implements BaseClient
 			return $this->disconnect($ws, $fd, "The Sender doesn't exist.");
 		}
 
-		// $to_uid = self::$FdMapping->get
 		if ( ( $to_fd = $this->__checkisOnline( $data['to'] ) ) !== false ) {
 			//online send
 			$r = $this->successSend($ws, $to_fd, [
@@ -199,18 +203,13 @@ class RedisChatClient implements BaseClient
 
 	private function __getUsers($ws, int $fd, array $data)
 	{
-		// $uid = self::$FdMapping->getUidByFd($fd);
-		// if (empty($uid)) {
-		// 	return $this->disconnect($ws, $fd, "No login, please log in and visit");
-		// }
-
 		if (! self::$FdMapping->checkExistByUser($data['uid'], 'uid')) {
 			return $this->disconnect($ws, $fd, "The user does not exist");
 		}
 
 		// Login failure has expired
 		if (self::$FdMapping->checkLoginOverdue($data['uid'])) {
-			return $this->disconnect($ws, $fd, 'Login failure has expired');
+			return $this->disconnect($ws, $fd, '长时间未登录了，请重新登录', 107);
 		}
 
 		$res = self::$FdMapping->delFd($fd, $data['uid']);
@@ -262,6 +261,7 @@ class RedisChatClient implements BaseClient
 
 	protected function successSend($ws, int $fd, array $data = [], string $msg = 'ok', int $code = 100)
 	{
+		if (empty($fd)) return;
 		$this->showMsg('showInfo', $msg);
 		$ws->push($fd, json_encode([
 			'code' => $code,

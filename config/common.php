@@ -43,6 +43,6 @@ return [
 		'persistent_id' => 'JSWOOLE'
 	],
 	'user' => [
-		'login_expire_time' => 7 * 24 * 3600
+		'login_expire_time' => 1 * 24 * 3600
 	]
 ];
