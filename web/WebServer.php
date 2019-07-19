@@ -126,14 +126,14 @@ $http->on('start', function(swoole_server $server) {
 ////Master进程状态不明，因为Manager与Master是并行的，onManagerStart回调发生是不能确定Master进程是否已就绪
 //});
 
-$http->on('WorkStart', function(swoole_server $server,int $work_id) {
-    //此事件在Worker进程/Task进程启动时发生。这里创建的对象可以在进程生命周期内使用
-    //onWorkerStart/onStart是并发执行的，没有先后顺序
-    //可以通过$server->taskworker属性来判断当前是Worker进程还是Task进程
-    //设置了worker_num和task_worker_num超过1时，每个进程都会触发一次onWorkerStart事件，可通过判断$worker_id区分不同的工作进程
-    //由 worker 进程向 task 进程发送任务，task 进程处理完全部任务之后通过onFinish回调函数通知 worker 进程。例如，我们在后台操作向十万个用户群发通知邮件，操作完成后操作的状态显示为发送中，这时我们可以继续其他操作。等邮件群发完毕后，操作的状态自动改为已发送。
-//    如果想使用Reload机制实现代码重载入，必须在onWorkerStart中require你的业务文件，而不是在文件头部。在onWorkerStart调用之前已包含的文件，不会重新载入代码。
-});
+//$http->on('WorkStart', function(swoole_server $server,int $work_id) {
+//    //此事件在Worker进程/Task进程启动时发生。这里创建的对象可以在进程生命周期内使用
+//    //onWorkerStart/onStart是并发执行的，没有先后顺序
+//    //可以通过$server->taskworker属性来判断当前是Worker进程还是Task进程
+//    //设置了worker_num和task_worker_num超过1时，每个进程都会触发一次onWorkerStart事件，可通过判断$worker_id区分不同的工作进程
+//    //由 worker 进程向 task 进程发送任务，task 进程处理完全部任务之后通过onFinish回调函数通知 worker 进程。例如，我们在后台操作向十万个用户群发通知邮件，操作完成后操作的状态显示为发送中，这时我们可以继续其他操作。等邮件群发完毕后，操作的状态自动改为已发送。
+////    如果想使用Reload机制实现代码重载入，必须在onWorkerStart中require你的业务文件，而不是在文件头部。在onWorkerStart调用之前已包含的文件，不会重新载入代码。
+//});
 
 $http->on('connect', function(swoole_server $server, int $fd, int $reactorId) {
 //    有新的连接进入时，在worker进程中回调
