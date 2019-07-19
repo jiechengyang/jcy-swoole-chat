@@ -6,19 +6,19 @@
  * Time: 下午 16:11
  */
 
-namespace App\Http;
+namespace App\libary;
 
-use App\Controller\UserController;
-use App\Controller\FileController;
+use App\controller\UserController;
+use App\controller\FileController;
 use \FastRoute;
 
 class Route
 {
     private static $_instance = null;
 
-    protected $request;
+    protected static $request;
 
-    protected $response;
+    protected static $response;
 
     private $header;
 
@@ -36,64 +36,85 @@ class Route
 
     private $routeInfo;
 
-    public function __construct($request, $response)
+    private $dispatcher;
+
+    public function __construct()
     {
-        $this->request = $request;
-        $this->$response = $response;
-        $this->header = $this->request['header'];
-        $this->server = $this->request['server'];
-        $this->queryParams = $this->request->get;
-        $this->postData = $this->request->post;
-        $this->__FILES = $this->request->files;
-        $this->httpMethod = $this->server['request_method'];
-        $this->uri = $this->server['request_uri'];
+        // $this->request = $request;
+        // self::$response = $response;
+        // $this->header = $this->request->header;
+        // $this->server = $this->request->server;
+        // $this->queryParams = $this->request->get;
+        // $this->postData = $this->request->post;
+        // $this->__FILES = $this->request->files;
+        // $this->httpMethod = $this->server['request_method'];
+        // $this->uri = $this->server['request_uri'];
+        $this->dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
+            $r->addGroup('/user', function(FastRoute\RouteCollector $r) {
+                $userController = new UserController();
+                $r->addRoute(['GET', 'POST'], '/login', [$userController, 'actionLogin']);
+                $r->addRoute(['GET', 'POST'], '/reg', [$userController, 'actionReg']);
+                $r->addRoute(['GET'], '/view/{id:\d+}', [$userController, 'actionView']);
+                $r->addRoute(['POST'], '/delete/{id:\d+}', [$userController, 'actionDelete']);
+            });
+
+            $r->addGroup('/file', function(FastRoute\RouteCollector $r) {
+                $fileController = new FileController();
+                $r->addRoute('GET', '/index[/{id:\d+}[/{name}]]',  [$fileController, 'actionIndex']);
+                $r->addRoute('POST', '/upload', [$fileController, 'actionUpload']);
+            });
+        });
     }
 
-    public static function getInstance($request, $response)
+    public static function getInstance()
     {
         if (! self::$_instance instanceof  self) {
-            self::$_instance = new self($request, $response);
+            self::$_instance = new self();
         }
 
         return self::$_instance;
     }
 
-    public function run()
+    public function run($request, $response)
     {
-        $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
-            $r->addGroup('/user', function(FastRoute\RouteCollector $r) {
-                $userController = new UserController();
-                $r->addRoute(['GET', 'POST'], 'login', [$userController, 'actionLogin']);
-                $r->addRoute(['GET', 'POST'], 'reg', [$userController, 'actionReg']);
-                $r->addRoute(['GET'], 'view/{id:\d+}', [$userController, 'actionView']);
-                $r->addRoute(['POST'], 'delete/{id:\d+}', [$userController, 'actionDelete']);
-            });
-
-            $r->addGroup('/file', function(FastRoute\RouteCollector $r) {
-                $fileController = new FileController();
-                $r->addRoute('GET', 'index', [$fileController, 'actionIndex']);
-                $r->addRoute('POST', 'upload', [$fileController, 'actionUpload']);
-            });
-        });
-
-        $this->routeInfo = $dispatcher->dispatch($this->httpMethod, $this->uri);
-        switch ($this->routeInfo[0]) {
+        self::$request = $request;
+        self::$response = $response;
+        $this->initData();
+        if (false !== $pos = strpos($this->uri, '?')) {
+            $uri = substr($this->uri, 0, $pos);
+        }
+        $uri = rawurldecode($this->uri);
+        $this->routeInfo = $this->dispatcher->dispatch($this->httpMethod, $uri);
+        switch ($this->routeInfo[0])  {
             case FastRoute\Dispatcher::NOT_FOUND:
                 // ... 404 Not Found 没找到对应的方法
-                return "404 Not Found ";
+                self::$response->status(404);
+                self::$response->end("404 Not Found ");
                 break;
             case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $this->routeInfo[1];
                 // ... 405 Method Not Allowed  方法不允许
-                return "405 Method Not Allowed ";
-                break;
+                self::$response->status(405);
+                self::$response->end("405 Method Not Allowed");
+                return;
             case FastRoute\Dispatcher::FOUND: // 找到对应的方法
                 $handler = $this->routeInfo[1]; // 获得处理函数
                 $vars = $this->routeInfo[2]; // 获取请求参数
                 // ... call $handler with $vars // 调用处理函数
-                call_user_func($handler, $vars);
+                self::$response->end(call_user_func($handler, [$vars, self::$request]));
                 break;
         }
+    }
+
+    private function initData()
+    {
+        $this->header = self::$request->header;
+        $this->server = self::$request->server;
+        $this->queryParams = self::$request->get;
+        $this->postData = self::$request->post;
+        $this->__FILES = self::$request->files;
+        $this->httpMethod = $this->server['request_method'];
+        $this->uri = $this->server['request_uri'];
     }
 
     public function getIsGet():bool
@@ -110,10 +131,4 @@ class Route
     {
         return $this->routeInfo;
     }
-
-    private function render(string $view, array $params = []):void
-    {
-    }
-
-
 }

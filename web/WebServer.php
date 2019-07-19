@@ -9,7 +9,7 @@ require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 
 
 spl_autoload_register('autoLoader');
 //register_shutdown_function('fatalError');
-set_error_handler('appError');
+set_exception_handler('appError');
 
 
 //function fatalError():void
@@ -21,45 +21,43 @@ set_error_handler('appError');
 //    flush();
 //}
 
-function appError($errno, $errstr, $errfile, $errline, array $err_context):void
+function appError($exception):void
 {
-    $errno = $errno & error_reporting();
-    if($errno == 0) return;
-    if(!defined('E_STRICT'))            define('E_STRICT', 2048);
-    if(!defined('E_RECOVERABLE_ERROR')) define('E_RECOVERABLE_ERROR', 4096);
-    print "<pre>\n<b>";
-    switch($errno){
-        case E_ERROR:               print "Error";                  break;
-        case E_WARNING:             print "Warning";                break;
-        case E_PARSE:               print "Parse Error";            break;
-        case E_NOTICE:              print "Notice";                 break;
-        case E_CORE_ERROR:          print "Core Error";             break;
-        case E_CORE_WARNING:        print "Core Warning";           break;
-        case E_COMPILE_ERROR:       print "Compile Error";          break;
-        case E_COMPILE_WARNING:     print "Compile Warning";        break;
-        case E_USER_ERROR:          print "User Error";             break;
-        case E_USER_WARNING:        print "User Warning";           break;
-        case E_USER_NOTICE:         print "User Notice";            break;
-        case E_STRICT:              print "Strict Notice";          break;
-        case E_RECOVERABLE_ERROR:   print "Recoverable Error";      break;
-        default:                    print "Unknown error ($errno)"; break;
-    }
-    print ":</b> <i>$errstr</i> in <b>$errfile</b> on line <b>$errline</b>\n";
-    if(function_exists('debug_backtrace')){
-        //print "backtrace:\n";
-        $backtrace = debug_backtrace();
-        array_shift($backtrace);
-        foreach($backtrace as $i=>$l){
-            print "[$i] in function <b>{$l['function']['class']}{$l['function']['type']}</b>";
-            if($l['file']) print " in <b>{$l['file']}</b>";
-            if($l['line']) print " on line <b>{$l['line']}</b>";
-            print "\n";
+        $exceptionHash = array(
+            'className' => 'Exception',
+            'message' => $exception->getMessage(),
+            'code' => $exception->getCode(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'userAgent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+            'trace' => array(),
+        );
+        $traceItems = $exception->getTrace();
+        foreach ($traceItems as $traceItem) {
+            $traceHash = array(
+                'file' => isset($traceItem['file']) ? $traceItem['file'] : 'null',
+                'line' => isset($traceItem['line']) ? $traceItem['line'] : 'null',
+                'function' => isset($traceItem['function']) ? $traceItem['function'] : 'null',
+                'args' => array(),
+            );
+
+            if (!empty($traceItem['class'])) {
+                $traceHash['class'] = $traceItem['class'];
+            }
+
+            if (!empty($traceItem['type'])) {
+                $traceHash['type'] = $traceItem['type'];
+            }
+
+            if (!empty($traceItem['args'])) {
+                foreach ($traceItem['args'] as $argsItem) {
+                    $traceHash['args'][] = \var_export($argsItem, true);
+                }
+            }
+
+            $exceptionHash['trace'][] = $traceHash;
         }
-    }
-    print "\n</pre>";
-    if(isset($GLOBALS['error_fatal'])){
-        if($GLOBALS['error_fatal'] & $errno) die('fatal');
-    }
+        print_r($exceptionHash);
 }
 
 function error_fatal($mask = NULL): ?string
@@ -75,18 +73,17 @@ function error_fatal($mask = NULL): ?string
 function autoLoader(string $class):void
 {
     global $config;
-    print_r($class);
     echo PHP_EOL;
     if (isset($config['web']['path'][$class])) {
         require_once "" . $config['web']['path'][$class] . "";
         return;
     }
 
-    $baseClass = str_replace("\\", DIRECTORY_SEPARATOR, $class) . '.php';
-    $clasPath = WEB_PATH . DIRECTORY_SEPARATOR . $baseClass;
-    if (is_file($clasPath)) {
-        $config['web']['path'][$baseClass] = $clasPath;
-        require_once($clasPath);
+    $baseClass = str_replace("\\",  DIRECTORY_SEPARATOR, $class) . '.php';
+    $classPath = str_replace('App/',  '',  WEB_PATH . DIRECTORY_SEPARATOR . $baseClass);
+    if (is_file($classPath)) {
+        $config['web']['path'][$baseClass] = $classPath;
+        require_once($classPath);
         return;
     }
 }
@@ -144,7 +141,7 @@ $http->on('Connect', function(swoole_server $server, int $fd, int $reactorId) {
 $http->on('receive', function (swoole_server $serv, int $fd, int $reactor_id, $data) {
 });
 
-$http->on('Request', ['Http::receive']);
+$http->on('Request', [App\libary\Http::class, 'receive']);
 
 $http->on('Close', function(swoole_server $server, int $fd, int $reactorId) {
 
