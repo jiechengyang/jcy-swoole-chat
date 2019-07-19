@@ -23,12 +23,13 @@ return [
 		'daemonize' => false,
 		'heartbeat_check_interval' => 120, // 心跳检测间隔时长(秒)
 		'heartbeat_idle_time' => 10 * 60, // 连接最大允许空闲的时间
-        'worker_num' => 2, // 工作进程数量. 设置为CPU的1-4倍最合理
-        'max_request' => 10000, // 防止 PHP 内存溢出, 一个工作进程处理 X 次任务后自动重启 (注: 0,不自动重启)
-        'max_conn' => 1024,// 最大连接数
-        'dispatch_mode' => 2,
-        'task_worker_num' => 4,
-        // 'task_worker_num' => 8,// 任务工作进程数量
+		'worker_num' => 2, // 工作进程数量. 设置为CPU的1-4倍最合理
+		'max_request' => 10000, // 防止 PHP 内存溢出, 一个工作进程处理 X 次任务后自动重启 (注: 0,不自动重启)
+		'max_conn' => 1024,// 最大连接数
+		'dispatch_mode' => 2,
+		'task_worker_num' => 4,
+		'log_file' => ROOT_PATH . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'websocket-swoole.log'
+		// 'task_worker_num' => 8,// 任务工作进程数量
 	],
 	'redis' => [
 		'host' => '127.0.0.1',

@@ -45,26 +45,27 @@ class Application
 
   	public function run()
   	{
-  		self::$rootPath = ROOT_PATH;
-  		spl_autoload_register( __CLASS__ . '::autoLoader' );//get_class()
-  		$this->errorHandler();
-  		$this->draw();
-  		$params = getopt('m:d:');
-  		if ( empty($params['m']) || (! array_key_exists( $params['m'], self::$modes) ) ) {
-  			Color::showError('please chose: RedisChatClient/SwooleTableChatClient/ImClient three modes');
-  			echo PHP_EOL, PHP_EOL;
-  			return;
-  		}
+            self::$rootPath = ROOT_PATH;
+            spl_autoload_register( __CLASS__ . '::autoLoader' );//get_class()
+            $this->mkdir();
+            $this->errorHandler();
+            $this->draw();
+            $params = getopt('m:d:');
+            if ( empty($params['m']) || (! array_key_exists( $params['m'], self::$modes) ) ) {
+                  Color::showError('please chose: RedisChatClient/SwooleTableChatClient/ImClient three modes');
+                  echo PHP_EOL, PHP_EOL;
+                  return;
+            }
 
-  		$client = self::$modes[$params['m']];
-  		if (isset($params['d']) && $params['d'] === '1') {
-  			self::$config['socket']['daemonize'] = true;
-  		}
+            $client = self::$modes[$params['m']];
+            if (isset($params['d']) && $params['d'] === '1') {
+                self::$config['socket']['daemonize'] = true;
+            }
 
-  		$server = new BaseSwoole(self::$config['socket']);
-  		$server->setClient(new $client());
-      $server->run();
-  		
+            $server = new BaseSwoole(self::$config['socket']);
+            $server->setClient(new $client());
+            $server->run();
+
   	}
 
   	private function draw()
@@ -93,26 +94,26 @@ IMG;
   	}
 
 
-    // get sys config
-    public static function getSwooleConfig(): array
-    {
-      return self::$config['swoole'];
-    }
+      // get sys config
+      public static function getSwooleConfig(): array
+      {
+        return self::$config['swoole'];
+      }
 
-    public static function getRedisConfig(): array
-    {
-      return self::$config['redis'];
-    }
+      public static function getRedisConfig(): array
+      {
+        return self::$config['redis'];
+      }
 
-    public static function getUserConfig(): array
-    {
-      return self::$config['user'];
-    }
+      public static function getUserConfig(): array
+      {
+        return self::$config['user'];
+      }
 
-    public static function getAesConfig(): array
-    {
-      return self::$config['aes'];
-    }
+      public static function getAesConfig(): array
+      {
+        return self::$config['aes'];
+      }
 
   	private function errorHandler()
   	{
@@ -122,10 +123,6 @@ IMG;
   		    error_reporting(E_ALL);
   		    ini_set('display_errors','Off');
   		    ini_set('log_errors', 'On');
-  		    if (! is_dir(self::$config['swoole']['log']['path'])) {
-  		    	mkdir(self::$config['swoole']['log']['path'], 0777, true);
-  		    }
-
   		    ini_set('error_log', self::$config['swoole']['log']['path'] . DIRECTORY_SEPARATOR . 'error.log');
   		}
   	}

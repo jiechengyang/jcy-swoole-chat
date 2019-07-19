@@ -66,28 +66,28 @@ class BaseSwoole
 
 	public function run()
 	{
-        $this->server->on('start', [$this->client, 'onStart']);
-        $this->server->on('connect', [$this->client, 'onConnect']);
-        $this->server->on('open', [$this->client, 'onOpen']);
-        $this->server->on('message', [$this->client, 'onMessage']);
-        $this->server->on('close', [$this->client, 'onClose']);
+		$this->server->on('start', [$this->client, 'onStart']);
+		$this->server->on('connect', [$this->client, 'onConnect']);
+		$this->server->on('open', [$this->client, 'onOpen']);
+		$this->server->on('message', [$this->client, 'onMessage']);
+		$this->server->on('close', [$this->client, 'onClose']);
 
-        $events = [
-        	'onManagerStart',
-        	'onWorkerStart'
-        ];
+		$events = [
+			'onManagerStart',
+			'onWorkerStart'
+		];
 
-        foreach($events as $event) {
-        	if (method_exists($this->client, $event)) {
-        		$this->server->on(str_replace('on', '', $event), [$this->client, $event]);
-        	}
-        }
+		foreach ($events as $event) {
+			if (method_exists($this->client, $event)) {
+				$this->server->on(str_replace('on', '', $event), [$this->client, $event]);
+			}
+		}
 
-        if(!empty($this->config['task_worker_num'])) {
-        	$this->server->on('Task', [$this->client, 'onTask']);
-        	$this->server->on('Finish', [$this->client, 'onFinish']);
-        }
+		if(!empty($this->config['task_worker_num'])) {
+			$this->server->on('Task', [$this->client, 'onTask']);
+			$this->server->on('Finish', [$this->client, 'onFinish']);
+		}
 
-        $this->server->start();
+		$this->server->start();
 	}
 }
