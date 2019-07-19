@@ -50,11 +50,10 @@ function appError($errno, $errstr, $errfile, $errline, array $err_context):void
         $backtrace = debug_backtrace();
         array_shift($backtrace);
         foreach($backtrace as $i=>$l){
-            var_dump($l);
-//            print "[$i] in function <b>{$l['class']}{$l['type']}{$l['function']}</b>";
-//            if($l['file']) print " in <b>{$l['file']}</b>";
-//            if($l['line']) print " on line <b>{$l['line']}</b>";
-//            print "\n";
+            print "[$i] in function <b>{$l['function']['class']}{$l['function']['type']}</b>";
+            if($l['file']) print " in <b>{$l['file']}</b>";
+            if($l['line']) print " on line <b>{$l['line']}</b>";
+            print "\n";
         }
     }
     print "\n</pre>";
