@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 $http = new Swoole\Http\Server("0.0.0.0", 9521);
 
