@@ -3,11 +3,14 @@
 defined('ROOT_PATH') or define('ROOT_PATH', dirname(__DIR__));
 defined('WEB_PATH') or define('WEB_PATH', __DIR__);
 $config = require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'common.php';
+$config['web']['classPath'] = [];
 require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-require_once WEB_PATH . DIRECTORY_SEPARATOR .'libary' . DIRECTORY_SEPARATOR . 'Http.php';
+//require_once WEB_PATH . DIRECTORY_SEPARATOR .'libary' . DIRECTORY_SEPARATOR . 'Http.php';
 
+spl_autoload_register('autoLoader');
 register_shutdown_function('fatalError');
 set_error_handler('appError');
+
 
 function fatalError():void
 {
@@ -67,6 +70,23 @@ function error_fatal($mask = NULL): ?string
         $GLOBALS['error_fatal'] = 0;
     }
     return $GLOBALS['error_fatal'];
+}
+
+function autoLoader(string $class):void
+{
+    global $config;
+    if (isset($config['web']['path'][$class])) {
+        require_once "" . $config['web']['path'][$class] . "";
+        return;
+    }
+
+    $baseClass = str_replace("\\", DIRECTORY_SEPARATOR, $class) . '.php';
+    $clasPath = WEB_PATH . DIRECTORY_SEPARATOR . $baseClass;
+    if (is_file($clasPath)) {
+        $config['web']['path'][$baseClass] = $clasPath;
+        require_once($clasPath);
+        return;
+    }
 }
 
 $webConfig = array_merge($config['web'], [
