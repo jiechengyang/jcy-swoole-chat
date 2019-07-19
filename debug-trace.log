@@ -1,0 +1,226 @@
+["function"]=>
+  string(2) "on"
+  ["class"]=>
+  string(18) "Swoole\Server\Port"
+  ["object"]=>
+  object(Swoole\Server\Port)#4 (16) {
+    ["onConnect":"Swoole\Server\Port":private]=>
+    NULL
+    ["onReceive":"Swoole\Server\Port":private]=>
+    NULL
+    ["onClose":"Swoole\Server\Port":private]=>
+    NULL
+    ["onPacket":"Swoole\Server\Port":private]=>
+    NULL
+    ["onBufferFull":"Swoole\Server\Port":private]=>
+    NULL
+    ["onBufferEmpty":"Swoole\Server\Port":private]=>
+    NULL
+    ["onRequest":"Swoole\Server\Port":private]=>
+    NULL
+    ["onHandShake":"Swoole\Server\Port":private]=>
+    NULL
+    ["onOpen":"Swoole\Server\Port":private]=>
+    NULL
+    ["onMessage":"Swoole\Server\Port":private]=>
+    NULL
+    ["host"]=>
+    string(7) "0.0.0.0"
+    ["port"]=>
+    int(9521)
+    ["type"]=>
+    int(1)
+    ["sock"]=>
+    int(3)
+    ["setting"]=>
+    array(6) {
+      ["host"]=>
+      string(7) "0.0.0.0"
+      ["port"]=>
+      int(9521)
+      ["worker_num"]=>
+      int(1)
+      ["classPath"]=>
+      array(0) {
+      }
+      ["log_file"]=>
+      string(52) "/home/yjc/swoole/JSwoole/runtime/logs/web-swoole.log"
+      ["pid_file"]=>
+      string(52) "/home/yjc/swoole/JSwoole/runtime/logs/web-swoole.pid"
+    }
+    ["connections"]=>
+    object(Swoole\Connection\Iterator)#5 (0) {
+    }
+  }
+  ["type"]=>
+  string(2) "->"
+  ["args"]=>
+  array(2) {
+    [0]=>
+    string(9) "WorkStart"
+    [1]=>
+    object(Closure)#7 (1) {
+      ["parameter"]=>
+      array(2) {
+        ["$server"]=>
+        string(10) "<required>"
+        ["$work_id"]=>
+        string(10) "<required>"
+      }
+    }
+  }
+}
+array(7) {
+  ["file"]=>
+  string(42) "/home/yjc/swoole/JSwoole/web/WebServer.php"
+  ["line"]=>
+  int(137)
+  ["function"]=>
+  string(2) "on"
+  ["class"]=>
+  string(13) "Swoole\Server"
+  ["object"]=>
+  object(Swoole\Http\Server)#3 (25) {
+    ["onStart":"Swoole\Server":private]=>
+    object(Closure)#6 (1) {
+      ["parameter"]=>
+      array(1) {
+        ["$server"]=>
+        string(10) "<required>"
+      }
+    }
+    ["onShutdown":"Swoole\Server":private]=>
+    NULL
+    ["onWorkerStart":"Swoole\Server":private]=>
+    NULL
+    ["onWorkerStop":"Swoole\Server":private]=>
+    NULL
+    ["onWorkerExit":"Swoole\Server":private]=>
+    NULL
+    ["onWorkerError":"Swoole\Server":private]=>
+    NULL
+    ["onTask":"Swoole\Server":private]=>
+    NULL
+    ["onFinish":"Swoole\Server":private]=>
+    NULL
+    ["onManagerStart":"Swoole\Server":private]=>
+    NULL
+    ["onManagerStop":"Swoole\Server":private]=>
+    NULL
+    ["onPipeMessage":"Swoole\Server":private]=>
+    NULL
+    ["setting"]=>
+    array(6) {
+      ["host"]=>
+      string(7) "0.0.0.0"
+      ["port"]=>
+      int(9521)
+      ["worker_num"]=>
+      int(1)
+      ["classPath"]=>
+      array(0) {
+      }
+      ["log_file"]=>
+      string(52) "/home/yjc/swoole/JSwoole/runtime/logs/web-swoole.log"
+      ["pid_file"]=>
+      string(52) "/home/yjc/swoole/JSwoole/runtime/logs/web-swoole.pid"
+    }
+    ["connections"]=>
+    object(Swoole\Connection\Iterator)#2 (0) {
+    }
+    ["host"]=>
+    string(7) "0.0.0.0"
+    ["port"]=>
+    int(9521)
+    ["type"]=>
+    int(1)
+    ["mode"]=>
+    int(2)
+    ["ports"]=>
+    array(1) {
+      [0]=>
+      object(Swoole\Server\Port)#4 (16) {
+        ["onConnect":"Swoole\Server\Port":private]=>
+        NULL
+        ["onReceive":"Swoole\Server\Port":private]=>
+        NULL
+        ["onClose":"Swoole\Server\Port":private]=>
+        NULL
+        ["onPacket":"Swoole\Server\Port":private]=>
+        NULL
+        ["onBufferFull":"Swoole\Server\Port":private]=>
+        NULL
+        ["onBufferEmpty":"Swoole\Server\Port":private]=>
+        NULL
+        ["onRequest":"Swoole\Server\Port":private]=>
+        NULL
+        ["onHandShake":"Swoole\Server\Port":private]=>
+        NULL
+        ["onOpen":"Swoole\Server\Port":private]=>
+        NULL
+        ["onMessage":"Swoole\Server\Port":private]=>
+        NULL
+        ["host"]=>
+        string(7) "0.0.0.0"
+        ["port"]=>
+        int(9521)
+        ["type"]=>
+        int(1)
+        ["sock"]=>
+        int(3)
+        ["setting"]=>
+        array(6) {
+          ["host"]=>
+          string(7) "0.0.0.0"
+          ["port"]=>
+          int(9521)
+          ["worker_num"]=>
+          int(1)
+          ["classPath"]=>
+          array(0) {
+          }
+          ["log_file"]=>
+          string(52) "/home/yjc/swoole/JSwoole/runtime/logs/web-swoole.log"
+          ["pid_file"]=>
+          string(52) "/home/yjc/swoole/JSwoole/runtime/logs/web-swoole.pid"
+        }
+        ["connections"]=>
+        object(Swoole\Connection\Iterator)#5 (0) {
+        }
+      }
+    }
+    ["master_pid"]=>
+    int(0)
+    ["manager_pid"]=>
+    int(0)
+    ["worker_id"]=>
+    int(-1)
+    ["taskworker"]=>
+    bool(false)
+    ["worker_pid"]=>
+    int(0)
+    ["onRequest":"Swoole\Http\Server":private]=>
+    NULL
+    ["onHandshake":"Swoole\Http\Server":private]=>
+    NULL
+  }
+  ["type"]=>
+  string(2) "->"
+  ["args"]=>
+  array(2) {
+    [0]=>
+    string(9) "WorkStart"
+    [1]=>
+    object(Closure)#7 (1) {
+      ["parameter"]=>
+      array(2) {
+        ["$server"]=>
+        string(10) "<required>"
+        ["$work_id"]=>
+        string(10) "<required>"
+      }
+    }
+  }
+}
+
+
