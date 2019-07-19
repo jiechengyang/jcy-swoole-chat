@@ -118,13 +118,13 @@ $http->on('start', function(swoole_server $server) {
 //    可以在onStart回调中，将$serv->master_pid和$serv->manager_pid的值保存到一个文件中。这样可以编写脚本，向这两个PID发送信号来实现关闭和重启的操作。
 //    onStart事件在Master进程的主线程中被调用
 });
-$http->on('ManagerStat', function(swoole_server $serv) {
-//    当管理进程启动时调用它
-//    在这个回调函数中可以修改管理进程的名称
-//    onManagerStart触发时，说明：
-//          Task和Worker进程已创建
-//Master进程状态不明，因为Manager与Master是并行的，onManagerStart回调发生是不能确定Master进程是否已就绪
-});
+//$http->on('ManagerStart', function(swoole_server $serv) {
+////    当管理进程启动时调用它
+////    在这个回调函数中可以修改管理进程的名称
+////    onManagerStart触发时，说明：
+////          Task和Worker进程已创建
+////Master进程状态不明，因为Manager与Master是并行的，onManagerStart回调发生是不能确定Master进程是否已就绪
+//});
 
 $http->on('WorkStart', function(swoole_server $server,int $work_id) {
     //此事件在Worker进程/Task进程启动时发生。这里创建的对象可以在进程生命周期内使用
