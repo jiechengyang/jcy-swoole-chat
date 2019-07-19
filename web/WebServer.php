@@ -90,8 +90,8 @@ function autoLoader(string $class):void
 }
 
 $webConfig = array_merge($config['web'], [
-    'log_file' => $config['swoole']['log'] . DIRECTORY_SEPARATOR . 'web-swoole.log',
-    'pid_file' => $config['swoole']['log'] . DIRECTORY_SEPARATOR . 'web-swoole.pid',
+    'log_file' => $config['swoole']['log']['path'] . DIRECTORY_SEPARATOR . 'web-swoole.log',
+    'pid_file' => $config['swoole']['log']['path'] . DIRECTORY_SEPARATOR . 'web-swoole.pid',
 ]);
 
 $http = new Swoole\Http\Server($webConfig['host'], $webConfig['port']);
