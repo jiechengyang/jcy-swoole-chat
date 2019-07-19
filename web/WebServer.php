@@ -8,18 +8,18 @@ require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 
 //require_once WEB_PATH . DIRECTORY_SEPARATOR .'libary' . DIRECTORY_SEPARATOR . 'Http.php';
 
 spl_autoload_register('autoLoader');
-register_shutdown_function('fatalError');
+//register_shutdown_function('fatalError');
 set_error_handler('appError');
 
 
-function fatalError():void
-{
-    header("Connection: close");
-    $size = ob_get_length();
-    header("Content-Length: $size");
-    ob_end_flush();
-    flush();
-}
+//function fatalError():void
+//{
+//    header("Connection: close");
+//    $size = ob_get_length();
+//    header("Content-Length: $size");
+//    ob_end_flush();
+//    flush();
+//}
 
 function appError($errno, $errstr, $errfile, $errline, array $err_context):void
 {
@@ -50,10 +50,11 @@ function appError($errno, $errstr, $errfile, $errline, array $err_context):void
         $backtrace = debug_backtrace();
         array_shift($backtrace);
         foreach($backtrace as $i=>$l){
-            print "[$i] in function <b>{$l['class']}{$l['type']}{$l['function']}</b>";
-            if($l['file']) print " in <b>{$l['file']}</b>";
-            if($l['line']) print " on line <b>{$l['line']}</b>";
-            print "\n";
+            var_dump($l);
+//            print "[$i] in function <b>{$l['class']}{$l['type']}{$l['function']}</b>";
+//            if($l['file']) print " in <b>{$l['file']}</b>";
+//            if($l['line']) print " on line <b>{$l['line']}</b>";
+//            print "\n";
         }
     }
     print "\n</pre>";
