@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 
-use Swoole\Http\Server as HttpServer;
+defined('ROOT_PATH') or define('ROOT_PATH', dirname(__DIR__));
+defined('WEB_PATH') or define('WEB_PATH', __DIR__);
+$config = require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'common.php';
+require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+require_once WEB_PATH . DIRECTORY_SEPARATOR .'libary' . DIRECTORY_SEPARATOR . 'Http.php';
 
-defined('ROOT_PATH') or define('ROOT_PATH', __DIR__);
-$config = require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'common.php';
 register_shutdown_function('fatalError');
 set_error_handler('appError');
 
@@ -57,7 +59,7 @@ function appError($errno, $errstr, $errfile, $errline, array $err_context):void
     }
 }
 
-function error_fatal($mask = NULL)
+function error_fatal($mask = NULL): ?string
 {
     if(!is_null($mask)){
         $GLOBALS['error_fatal'] = $mask;
@@ -67,24 +69,12 @@ function error_fatal($mask = NULL)
     return $GLOBALS['error_fatal'];
 }
 
-class Http
-{
-    public static function receive(swoole_http_request $request, swoole_http_response $response)
-    {
-
-    }
-
-    public static function response(swoole_server $server, int $fd, $data)
-    {
-    }
-}
-
 $webConfig = array_merge($config['web'], [
     'log_file' => $config['swoole']['log'] . DIRECTORY_SEPARATOR . 'web-swoole.log',
     'pid_file' => $config['swoole']['log'] . DIRECTORY_SEPARATOR . 'web-swoole.pid',
 ]);
 
-$http = new HttpServer($webConfig['host'], $webConfig['port']);
+$http = new Swoole\Http\Server($webConfig['host'], $webConfig['port']);
 //$http->listen('127');---通过监听，我们可以对外创建一个http协议和websocket协议
 $http->set($webConfig);
 //事件执行顺序
@@ -96,7 +86,7 @@ $http->set($webConfig);
 //onTask事件仅在task进程中发生
 //onFinish事件仅在worker进程中发生
 //onStart/onManagerStart/onWorkerStart 3个事件的执行顺序是不确定的
-$http->on('start', function(Server $server) {
+$http->on('start', function(swoole_server $server) {
 //    在此事件之前Server已进行了如下操作
 //    已创建了manager进程
 //    已创建了worker子进程

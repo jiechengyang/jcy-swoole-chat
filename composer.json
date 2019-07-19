@@ -8,5 +8,7 @@
             "email": "yangjiecheng1995@163.com"
         }
     ],
-    "require": {}
+    "require": {
+        "nikic/fast-route": "^1.3"
+    }
 }
