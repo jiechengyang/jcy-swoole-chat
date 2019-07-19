@@ -9,6 +9,12 @@
 /* 重写window属性 */
 window.onbeforeunload = onbeforeunload_handler;
 window.onunload = onunload_handler;
+$.fn.extend({
+    insertAtCaret: function(a) {
+        var c, d, e, b = $(this)[0];
+        document.selection ? (this.focus(), sel = document.selection.createRange(), sel.text = a, this.focus()) : b.selectionStart || "0" == b.selectionStart ? (c = b.selectionStart, d = b.selectionEnd, e = b.scrollTop, b.value = b.value.substring(0, c) + a + b.value.substring(d, b.value.length), this.focus(), b.selectionStart = c + a.length, b.selectionEnd = c + a.length, b.scrollTop = e) : (this.value += a, this.focus())
+    }
+})
 
 function onbeforeunload_handler() {
     var warning = "确认退出?";
@@ -24,7 +30,7 @@ window.alert = layer.alert
 /* 重写window属性 */
 const cookie = {
     set: function(key, value, delay) { //设置cookie方法
-        delay = delay || "7d";
+        delay = delay || "1d";
         delay = delay.toLocaleLowerCase();
         var expireDate = new Date();
         var num = parseInt(delay);
@@ -209,6 +215,202 @@ let utils = {
         let seconds = newDate.getSeconds() //取秒
 
         return year + "-" + month + "-" + nowday + " " + hours + ":" + minutes + ":" + seconds
+    }
+}
+
+// 聊天工具栏js
+let chatControl = {
+    index_emoji: null,
+    index_img: null,
+    isBeforeUpload: null,
+    isUploadStyle: 0,
+    emoji: {
+        "[最右]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/c8/lxhzuiyou_thumb.gif",
+        "[泪流满面]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/64/lxhtongku_thumb.gif",
+        "[江南style]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/67/gangnamstyle_thumb.gif",
+        "[偷乐]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/fa/lxhtouxiao_thumb.gif",
+        "[加油啊]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/03/lxhjiayou_thumb.gif",
+        "[doge]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/b6/doge_thumb.gif",
+        "[喵喵]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/4a/mm_thumb.gif",
+        "[笑cry]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/34/xiaoku_thumb.gif",
+        "[xkl转圈]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f4/xklzhuanquan_thumb.gif",
+        "[微笑]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/5c/huanglianwx_thumb.gif",
+        "[嘻嘻]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/0b/tootha_thumb.gif",
+        "[哈哈]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6a/laugh.gif",
+        "[可爱]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/14/tza_thumb.gif",
+        "[可怜]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/af/kl_thumb.gif",
+        "[挖鼻]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/0b/wabi_thumb.gif",
+        "[吃惊]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f4/cj_thumb.gif",
+        "[害羞]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6e/shamea_thumb.gif",
+        "[挤眼]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/c3/zy_thumb.gif",
+        "[闭嘴]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/29/bz_thumb.gif",
+        "[鄙视]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/71/bs2_thumb.gif",
+        "[爱你]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6d/lovea_thumb.gif",
+        "[泪]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/9d/sada_thumb.gif",
+        "[偷笑]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/19/heia_thumb.gif",
+        "[亲亲]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/8f/qq_thumb.gif",
+        "[生病]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/b6/sb_thumb.gif",
+        "[太开心]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/58/mb_thumb.gif",
+        "[白眼]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/landeln_thumb.gif",
+        "[右哼哼]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/98/yhh_thumb.gif",
+        "[左哼哼]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6d/zhh_thumb.gif",
+        "[嘘]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a6/x_thumb.gif",
+        "[衰]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/af/cry.gif",
+        "[委屈]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/73/wq_thumb.gif",
+        "[吐]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/9e/t_thumb.gif",
+        "[哈欠]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/cc/haqianv2_thumb.gif",
+        "[抱抱]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/27/bba_thumb.gif",
+        "[怒]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7c/angrya_thumb.gif",
+        "[疑问]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/5c/yw_thumb.gif",
+        "[馋嘴]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a5/cza_thumb.gif",
+        "[拜拜]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/70/88_thumb.gif",
+        "[思考]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/e9/sk_thumb.gif",
+        "[汗]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/24/sweata_thumb.gif",
+        "[困]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/kunv2_thumb.gif",
+        "[睡]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/96/huangliansj_thumb.gif",
+        "[钱]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/90/money_thumb.gif",
+        "[失望]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/0c/sw_thumb.gif",
+        "[酷]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/cool_thumb.gif",
+        "[色]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/20/huanglianse_thumb.gif",
+        "[哼]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/49/hatea_thumb.gif",
+        "[鼓掌]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/36/gza_thumb.gif",
+        "[晕]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/dizzya_thumb.gif",
+        "[悲伤]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/1a/bs_thumb.gif",
+        "[泪]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/9d/sada_thumb.gif",
+        "[偷笑]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/19/heia_thumb.gif",
+        "[抓狂]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/62/crazya_thumb.gif",
+        "[黑线]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/91/h_thumb.gif",
+        "[阴险]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6d/yx_thumb.gif",
+        "[怒骂]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/60/numav2_thumb.gif",
+        "[互粉]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/89/hufen_thumb.gif",
+        "[心]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/hearta_thumb.gif",
+        "[伤心]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/ea/unheart.gif",
+        "[猪头]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/58/pig.gif",
+        "[熊猫]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6e/panda_thumb.gif",
+        "[兔子]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/81/rabbit_thumb.gif",
+        "[ok]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d6/ok_thumb.gif",
+        "[耶]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/ye_thumb.gif",
+        "[good]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d8/good_thumb.gif",
+        "[no]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/ae/buyao_org.gif",
+        "[赞]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d0/z2_thumb.gif",
+        "[来]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/come_thumb.gif",
+        "[弱]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d8/sad_thumb.gif",
+        "[草泥马]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7a/shenshou_thumb.gif",
+        "[神马]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/60/horse2_thumb.gif",
+        "[囧]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/15/j_thumb.gif",
+        "[浮云]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/bc/fuyun_thumb.gif",
+        "[给力]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/1e/geiliv2_thumb.gif",
+        "[围观]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f2/wg_thumb.gif",
+        "[威武]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/70/vw_thumb.gif",
+        "[奥特曼]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/bc/otm_thumb.gif",
+        "[礼物]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/c4/liwu_thumb.gif",
+        "[钟]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d3/clock_thumb.gif",
+        "[话筒]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/9f/huatongv2_thumb.gif",
+        "[蜡烛]": "http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/lazhuv2_thumb.gif"
+    },
+    uploadPic: [],
+    initEmoji: () => {
+        const a = '<span class="item_emoji" id="emoji_[最右]" onclick="chatControl.clickEmojiItems(id);" title="[最右]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/c8/lxhzuiyou_thumb.gif"></span><span class="item_emoji" id="emoji_[泪流满面]" onclick="chatControl.clickEmojiItems(id);" title="[泪流满面]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/64/lxhtongku_thumb.gif"></span><span class="item_emoji" id="emoji_[江南style]" onclick="chatControl.clickEmojiItems(id);" title="[江南style]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/67/gangnamstyle_thumb.gif"></span><span class="item_emoji" id="emoji_[偷乐]" onclick="chatControl.clickEmojiItems(id);" title="[偷乐]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/fa/lxhtouxiao_thumb.gif"></span><span class="item_emoji" id="emoji_[加油啊]" onclick="chatControl.clickEmojiItems(id);" title="[加油啊]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/03/lxhjiayou_thumb.gif"></span><span class="item_emoji" id="emoji_[doge]" onclick="chatControl.clickEmojiItems(id);" title="[doge]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/b6/doge_thumb.gif"></span><span class="item_emoji" id="emoji_[喵喵]" onclick="chatControl.clickEmojiItems(id);" title="[喵喵]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/4a/mm_thumb.gif"></span><span class="item_emoji" id="emoji_[笑cry]" onclick="chatControl.clickEmojiItems(id);" title="[笑cry]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/34/xiaoku_thumb.gif"></span><span class="item_emoji" id="emoji_[xkl转圈]" onclick="chatControl.clickEmojiItems(id);" title="[xkl转圈]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f4/xklzhuanquan_thumb.gif"></span><span class="item_emoji" id="emoji_[微笑]" onclick="chatControl.clickEmojiItems(id);" title="[微笑]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/5c/huanglianwx_thumb.gif"></span><span class="item_emoji" id="emoji_[嘻嘻]" onclick="chatControl.clickEmojiItems(id);" title="[嘻嘻]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/0b/tootha_thumb.gif"></span><span class="item_emoji" id="emoji_[哈哈]" onclick="chatControl.clickEmojiItems(id);" title="[哈哈]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6a/laugh.gif"></span><span class="item_emoji" id="emoji_[可爱]" onclick="chatControl.clickEmojiItems(id);" title="[可爱]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/14/tza_thumb.gif"></span><span class="item_emoji" id="emoji_[可怜]" onclick="chatControl.clickEmojiItems(id);" title="[可怜]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/af/kl_thumb.gif"></span><span class="item_emoji" id="emoji_[挖鼻]" onclick="chatControl.clickEmojiItems(id);" title="[挖鼻]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/0b/wabi_thumb.gif"></span><span class="item_emoji" id="emoji_[吃惊]" onclick="chatControl.clickEmojiItems(id);" title="[吃惊]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f4/cj_thumb.gif"></span><span class="item_emoji" id="emoji_[害羞]" onclick="chatControl.clickEmojiItems(id);" title="[害羞]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6e/shamea_thumb.gif"></span><span class="item_emoji" id="emoji_[挤眼]" onclick="chatControl.clickEmojiItems(id);" title="[挤眼]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/c3/zy_thumb.gif"></span><span class="item_emoji" id="emoji_[闭嘴]" onclick="chatControl.clickEmojiItems(id);" title="[闭嘴]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/29/bz_thumb.gif"></span><span class="item_emoji" id="emoji_[鄙视]" onclick="chatControl.clickEmojiItems(id);" title="[鄙视]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/71/bs2_thumb.gif"></span><span class="item_emoji" id="emoji_[爱你]" onclick="chatControl.clickEmojiItems(id);" title="[爱你]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6d/lovea_thumb.gif"></span><span class="item_emoji" id="emoji_[泪]" onclick="chatControl.clickEmojiItems(id);" title="[泪]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/9d/sada_thumb.gif"></span><span class="item_emoji" id="emoji_[偷笑]" onclick="chatControl.clickEmojiItems(id);" title="[偷笑]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/19/heia_thumb.gif"></span><span class="item_emoji" id="emoji_[亲亲]" onclick="chatControl.clickEmojiItems(id);" title="[亲亲]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/8f/qq_thumb.gif"></span><span class="item_emoji" id="emoji_[生病]" onclick="chatControl.clickEmojiItems(id);" title="[生病]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/b6/sb_thumb.gif"></span><span class="item_emoji" id="emoji_[太开心]" onclick="chatControl.clickEmojiItems(id);" title="[太开心]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/58/mb_thumb.gif"></span><span class="item_emoji" id="emoji_[白眼]" onclick="chatControl.clickEmojiItems(id);" title="[白眼]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/landeln_thumb.gif"></span><span class="item_emoji" id="emoji_[右哼哼]" onclick="chatControl.clickEmojiItems(id);" title="[右哼哼]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/98/yhh_thumb.gif"></span><span class="item_emoji" id="emoji_[左哼哼]" onclick="chatControl.clickEmojiItems(id);" title="[左哼哼]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6d/zhh_thumb.gif"></span><span class="item_emoji" id="emoji_[嘘]" onclick="chatControl.clickEmojiItems(id);" title="[嘘]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a6/x_thumb.gif"></span><span class="item_emoji" id="emoji_[衰]" onclick="chatControl.clickEmojiItems(id);" title="[衰]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/af/cry.gif"></span><span class="item_emoji" id="emoji_[委屈]" onclick="chatControl.clickEmojiItems(id);" title="[委屈]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/73/wq_thumb.gif"></span><span class="item_emoji" id="emoji_[吐]" onclick="chatControl.clickEmojiItems(id);" title="[吐]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/9e/t_thumb.gif"></span><span class="item_emoji" id="emoji_[哈欠]" onclick="chatControl.clickEmojiItems(id);" title="[哈欠]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/cc/haqianv2_thumb.gif"></span><span class="item_emoji" id="emoji_[抱抱]" onclick="chatControl.clickEmojiItems(id);" title="[抱抱]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/27/bba_thumb.gif"></span><span class="item_emoji" id="emoji_[怒]" onclick="chatControl.clickEmojiItems(id);" title="[怒]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7c/angrya_thumb.gif"></span><span class="item_emoji" id="emoji_[疑问]" onclick="chatControl.clickEmojiItems(id);" title="[疑问]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/5c/yw_thumb.gif"></span><span class="item_emoji" id="emoji_[馋嘴]" onclick="chatControl.clickEmojiItems(id);" title="[馋嘴]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a5/cza_thumb.gif"></span><span class="item_emoji" id="emoji_[拜拜]" onclick="chatControl.clickEmojiItems(id);" title="[拜拜]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/70/88_thumb.gif"></span><span class="item_emoji" id="emoji_[思考]" onclick="chatControl.clickEmojiItems(id);" title="[思考]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/e9/sk_thumb.gif"></span><span class="item_emoji" id="emoji_[汗]" onclick="chatControl.clickEmojiItems(id);" title="[汗]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/24/sweata_thumb.gif"></span><span class="item_emoji" id="emoji_[困]" onclick="chatControl.clickEmojiItems(id);" title="[困]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/kunv2_thumb.gif"></span><span class="item_emoji" id="emoji_[睡]" onclick="chatControl.clickEmojiItems(id);" title="[睡]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/96/huangliansj_thumb.gif"></span><span class="item_emoji" id="emoji_[钱]" onclick="chatControl.clickEmojiItems(id);" title="[钱]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/90/money_thumb.gif"></span><span class="item_emoji" id="emoji_[失望]" onclick="chatControl.clickEmojiItems(id);" title="[失望]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/0c/sw_thumb.gif"></span><span class="item_emoji" id="emoji_[酷]" onclick="chatControl.clickEmojiItems(id);" title="[酷]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/cool_thumb.gif"></span><span class="item_emoji" id="emoji_[色]" onclick="chatControl.clickEmojiItems(id);" title="[色]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/20/huanglianse_thumb.gif"></span><span class="item_emoji" id="emoji_[哼]" onclick="chatControl.clickEmojiItems(id);" title="[哼]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/49/hatea_thumb.gif"></span><span class="item_emoji" id="emoji_[鼓掌]" onclick="chatControl.clickEmojiItems(id);" title="[鼓掌]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/36/gza_thumb.gif"></span><span class="item_emoji" id="emoji_[晕]" onclick="chatControl.clickEmojiItems(id);" title="[晕]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/dizzya_thumb.gif"></span><span class="item_emoji" id="emoji_[悲伤]" onclick="chatControl.clickEmojiItems(id);" title="[悲伤]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/1a/bs_thumb.gif"></span><span class="item_emoji" id="emoji_[抓狂]" onclick="chatControl.clickEmojiItems(id);" title="[抓狂]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/62/crazya_thumb.gif"></span><span class="item_emoji" id="emoji_[黑线]" onclick="chatControl.clickEmojiItems(id);" title="[黑线]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/91/h_thumb.gif"></span><span class="item_emoji" id="emoji_[阴险]" onclick="chatControl.clickEmojiItems(id);" title="[阴险]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6d/yx_thumb.gif"></span><span class="item_emoji" id="emoji_[怒骂]" onclick="chatControl.clickEmojiItems(id);" title="[怒骂]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/60/numav2_thumb.gif"></span><span class="item_emoji" id="emoji_[互粉]" onclick="chatControl.clickEmojiItems(id);" title="[互粉]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/89/hufen_thumb.gif"></span><span class="item_emoji" id="emoji_[心]" onclick="chatControl.clickEmojiItems(id);" title="[心]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/hearta_thumb.gif"></span><span class="item_emoji" id="emoji_[伤心]" onclick="chatControl.clickEmojiItems(id);" title="[伤心]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/ea/unheart.gif"></span><span class="item_emoji" id="emoji_[猪头]" onclick="chatControl.clickEmojiItems(id);" title="[猪头]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/58/pig.gif"></span><span class="item_emoji" id="emoji_[熊猫]" onclick="chatControl.clickEmojiItems(id);" title="[熊猫]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/6e/panda_thumb.gif"></span><span class="item_emoji" id="emoji_[兔子]" onclick="chatControl.clickEmojiItems(id);" title="[兔子]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/81/rabbit_thumb.gif"></span><span class="item_emoji" id="emoji_[ok]" onclick="chatControl.clickEmojiItems(id);" title="[ok]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d6/ok_thumb.gif"></span><span class="item_emoji" id="emoji_[耶]" onclick="chatControl.clickEmojiItems(id);" title="[耶]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/ye_thumb.gif"></span><span class="item_emoji" id="emoji_[good]" onclick="chatControl.clickEmojiItems(id);" title="[good]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d8/good_thumb.gif"></span><span class="item_emoji" id="emoji_[no]" onclick="chatControl.clickEmojiItems(id);" title="[no]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/ae/buyao_org.gif"></span><span class="item_emoji" id="emoji_[赞]" onclick="chatControl.clickEmojiItems(id);" title="[赞]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d0/z2_thumb.gif"></span><span class="item_emoji" id="emoji_[来]" onclick="chatControl.clickEmojiItems(id);" title="[来]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/40/come_thumb.gif"></span><span class="item_emoji" id="emoji_[弱]" onclick="chatControl.clickEmojiItems(id);" title="[弱]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d8/sad_thumb.gif"></span><span class="item_emoji" id="emoji_[草泥马]" onclick="chatControl.clickEmojiItems(id);" title="[草泥马]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/7a/shenshou_thumb.gif"></span><span class="item_emoji" id="emoji_[神马]" onclick="chatControl.clickEmojiItems(id);" title="[神马]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/60/horse2_thumb.gif"></span><span class="item_emoji" id="emoji_[囧]" onclick="chatControl.clickEmojiItems(id);" title="[囧]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/15/j_thumb.gif"></span><span class="item_emoji" id="emoji_[浮云]" onclick="chatControl.clickEmojiItems(id);" title="[浮云]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/bc/fuyun_thumb.gif"></span><span class="item_emoji" id="emoji_[给力]" onclick="chatControl.clickEmojiItems(id);" title="[给力]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/1e/geiliv2_thumb.gif"></span><span class="item_emoji" id="emoji_[围观]" onclick="chatControl.clickEmojiItems(id);" title="[围观]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/f2/wg_thumb.gif"></span><span class="item_emoji" id="emoji_[威武]" onclick="chatControl.clickEmojiItems(id);" title="[威武]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/70/vw_thumb.gif"></span><span class="item_emoji" id="emoji_[奥特曼]" onclick="chatControl.clickEmojiItems(id);" title="[奥特曼]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/bc/otm_thumb.gif"></span><span class="item_emoji" id="emoji_[礼物]" onclick="chatControl.clickEmojiItems(id);" title="[礼物]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/c4/liwu_thumb.gif"></span><span class="item_emoji" id="emoji_[钟]" onclick="chatControl.clickEmojiItems(id);" title="[钟]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d3/clock_thumb.gif"></span><span class="item_emoji" id="emoji_[话筒]" onclick="chatControl.clickEmojiItems(id);" title="[话筒]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/9f/huatongv2_thumb.gif"></span><span class="item_emoji" id="emoji_[蜡烛]" onclick="chatControl.clickEmojiItems(id);" title="[蜡烛]"><img class="imgitem_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/d9/lazhuv2_thumb.gif"></span>';
+        chatControl.index_emoji ? (layer.close(chatControl.index_emoji), chatControl.index_emoji = null) : chatControl.index_emoji = layer.tips("<div  class='list_emoji'>" + a + "</div>", ".emoji", {
+            tips: [1, "#fff"],
+            time: 0,
+            area: ["400px", "235px"],
+            shift: 5
+        })
+    },
+    initUploadPic: () => {
+        chatControl.index_img ? (layer.close(chatControl.index_img), chatControl.index_img = null) : (chatControl.index_img = layer.tips("<div id='uploadimg_list' style='height:250px;'></div><button id='uploadimg_upload' class='btn btn-default uploadimg' type='button'><span style='color:orange;margin-right:5px;' class='glyphicon glyphicon-picture'></span><span class='sp_uploadimg'>上传</span></button><div id='uploadimg_pages' style='float:right;margin-top:5px;'></div>", "#a_uploadimg", {
+            tips: [1, "#fff"],
+            time: 0,
+            area: ["390px", "300px"],
+            shift: 5
+        }), chatControl.bindImgList(1), chatControl.bindImgpage(), chatControl.isBeforeUpload = !1, $("#uploadimg_upload").on('click', () => {
+            chatControl.isUploadStyle = 0,
+                chatControl.isBeforeUpload = !1,
+                document.getElementById("uploading_file").click()
+        }))
+    },
+    bindImgList: (a) => {
+        var d, b = "",
+            c = "";
+        for (d = 10 * (a - 1); 10 * a > d; d++) chatControl.uploadPic[d] && (c = chatControl.uploadPic[d].replace(".", "_"), b += "<div style='height:64px;float:left;margin:25px 5px;'><img id='uploadimgitem_" + chatControl.uploadPic[d].replace(".", "_") + "'onclick='chatControl.clickSelimg(id);' onmouseover='chatControl.mouseoverZoomimg(id);' onmouseout='chatControl.mouseoutClosezoom();' style='height:64px;width:64px;' src='IMG/Upload/" + $.cookie("user_id") + "/" + chatControl.uploadPic[d] + "' /></div>");
+        $("#uploadimg_list").html(b)
+    },
+    bindImgpage: () => {
+        laypage({
+            cont: "uploadimg_pages",
+            pages: Math.ceil(chatControl.uploadPic.length / 10),
+            first: !1,
+            groups: 5,
+            last: !1,
+            prev: !1,
+            next: !1,
+            jump: function(a, b) {
+                b || chatControl.bindImgList(a.curr)
+            }
+        })
+    },
+    clickSelimg: () => {
+
+    },
+    mouseoverZoomimg: () => {
+
+    },
+    mouseoutClosezoom: () => {
+
+    },
+    clickEmojiItems: (a) => {
+        $(".message-input").insertAtCaret(a.split("_")[1]),
+            layer.close(chatControl.index_emoji),
+            chatControl.index_emoji = null
+    },
+    imguploadBase64: () => {
+        $("#uploadimg_upload").attr("disabled", !0),
+            $(".sp_uploadimg").html("上传中...");
+        // $.post("Act/h_main.ashx?act=uploadPhoto", {
+        //     base64str: a
+        // },
+        // function(a) {
+        //     var b, c, d;
+        //     if ($("#uploadimg_upload").attr("disabled", !1), $(".sp_uploadimg").text("上传"), isBeforeUpload = !0, $("#uploading_file").val(""), b = $.parseJSON(a), c = !1, "Fail" == b.state) return layer.alert(b.msg, {
+        //         icon: 5,
+        //         title: "上传结果"
+        //     }),
+        //     void 0;
+        //     for (d = 0; d < uploadPic.length; d++) if (uploadPic[d] == b.msg) {
+        //         c = !0;
+        //         break
+        //     }
+        //     c || uploadPic.splice(0, 0, b.msg),
+        //     bind_imglist(1),
+        //     bind_imgpage()
+        // })
+    },
+    imguploadFile: (a) => {
+        // $.ajax({
+        //     url: "Act/h_main.ashx?act=uploadImg",
+        //     type: "POST",
+        //     data: a,
+        //     cache: !1,
+        //     contentType: !1,
+        //     processData: !1,
+        //     success: function(a) {
+        //         var b, c, d;
+        //         if ($("#uploadimg_upload").attr("disabled", !1), $(".sp_uploadimg").text("上传"), isBeforeUpload = !0, $("#uploading_file").val(""), b = $.parseJSON(a), c = !1, "Fail" == b.state) return layer.alert(b.msg, {
+        //                 icon: 5,
+        //                 title: "上传结果"
+        //             }),
+        //             void 0;
+        //         for (d = 0; d < uploadPic.length; d++)
+        //             if (uploadPic[d] == b.msg) {
+        //                 c = !0;
+        //                 break
+        //             }
+        //         c || uploadPic.splice(0, 0, b.msg),
+        //             bind_imglist(1),
+        //             bind_imgpage()
+        //     }
+        // })
     }
 }
 
@@ -446,10 +648,14 @@ let business = {
         layIndex = layIndex || null;
         const uid = cookie.get(business.session_key)
         cookie.delete(business.session_key)
-        business.socketIO.ws.send(JSON.stringify({
+        // business.socketIO.ws.send(JSON.stringify({
+        //     type: 'logout',
+        //     uid: uid
+        // }))
+        business.socketIO.send({
             type: 'logout',
             uid: uid
-        }))
+        })
 
         business.socketIO.RegisterCallFunc.successCall = (ws, response) => {
             ws.close()
@@ -479,6 +685,16 @@ let business = {
             '<div class="chat-input-box">' +
             '<div class="col-sm-12">' +
             '<div class="chat-message-form">' +
+            '<div style="float:left;margin-top:4px;">' +
+            '<a class="emoji" style="margin-right:10px;" data-toggle="popover" data-placement="top" title="表情"><img style="outline-width:40px;" class="img_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/5c/huanglianwx_thumb.gif"></a>' +
+            '<a id="a_uploadimg" style="margin-right:10px;" title="上传图片"><img style="padding-top:4px;" class="img_uploadimg" src="static/images/uploadpic.png"></a>' +
+            '<a id="a_uploadfile" style="margin-right:10px;" title="上传文件"><img src="static/images/uploadfile.png"></a>' +
+            '<input id="uploading_file" type="file" style="display:none;">' +
+            '<a id="a_doodle" style="margin-right:10px;" title="涂鸦"><img src="static/images/doodle.png"></a>' +
+            '<a style="cursor:default;margin-right:10px;">|</a>' +
+            '<a id="a_getphoto" style="margin-right:10px;" title="拍照"><img src="static/images/camera.png"></a>' +
+            '<a id="a_record" style="margin-right:10px;" title="录音"><img src="static/images/record.png"></a>' +
+            '</div>' +
             '<div class="form-group">' +
             '<textarea class="form-control message-input" name="message" placeholder="输入消息内容，按回车键发送" onkeydown="business.sendMsg(event, this)" data-to="' + uid + '"></textarea>' +
             '</div>' +
@@ -496,6 +712,9 @@ let business = {
             maxmin: true,
             shadeClose: true,
             closeBtn: 1,
+            end: () => {
+                layer.closeAll('tips')
+            }
             // btn: ['火速围观', '残忍拒绝'],
             // btnAlign: 'c',
             // moveType: 1, //拖拽模式，0或者1,              
@@ -522,6 +741,39 @@ let business = {
         //         business.creatChatDom(user, msgs[i][0], msgs[i][2], msgs[i][3])
         //     }
         // }
+        //###bind event ####
+        $(".emoji").on('click', () => {
+            chatControl.initEmoji()
+        })
+
+        $("#a_uploadimg").on('click', () => {
+            chatControl.initUploadPic()
+        })
+
+        $("#uploading_file").change(function() {
+            var a, b, c;
+            if (!chatControl.isBeforeUpload)
+                if (a = document.getElementById("uploading_file").files[0], b = a.size / 1024, c = new FormData(), c.append("upload_file", a), 0 == chatControl.isUploadStyle)
+                    if (-1 != a.name.toLowerCase().indexOf(".gif")) {
+                        if (b > 500) return isBeforeUpload = !0,
+                            $("#uploading_file").val(""),
+                            layer.msg("gif图片上传失败,当前最大限制500kb"),
+                            !1;
+                        imgupload_file(c)
+                    } else b > 500 ? ($("#uploadimg_upload").attr("disabled", !0), $(".sp_uploadimg").html("上传中..."), lrz(this.files[0], {
+                            width: 500
+                        },
+                        function(a) {
+                            chatControl.imguploadBase64(a.base64)
+                        })) : chatControl.imguploadFile(c);
+            else if (1 == chatControl.isUploadStyle) {
+                if (b > 5120) return chatControl.isBeforeUpload = !0,
+                    $("#uploading_file").val(""),
+                    layer.msg("压缩包的大小不得超过5MB"),
+                    void 0;
+                uploadfile(c)
+            }
+        })
     },
     getStorageMsg: (from, to) => {
         const cache = new StoreCache(business.storage_key)
@@ -540,13 +792,22 @@ let business = {
                 // msg = msg.substring(0, 1000)
                 return false
             }
+            // console.log('aes加密后:', enaes, enaes.length)
+            // console.log('aes解密后:', aes.Decrypt(enaes))
+            // return
+            // business.socketIO.ws.send(JSON.stringify({
+            //     type: 'msg',
+            //     // from: from,
+            //     to: $(dom).data('to'),
+            //     body: enaes
+            // }))
 
-            business.socketIO.ws.send(JSON.stringify({
+            business.socketIO.send({
                 type: 'msg',
                 // from: from,
                 to: $(dom).data('to'),
                 body: msg
-            }))
+            })
 
             const load = layer.load()
             business.socketIO.RegisterCallFunc.successCall = (ws, response) => {
@@ -650,10 +911,48 @@ class StoreCache {
     }
 }
 
+class CryptoJsAes {
+    constructor() {
+        this.key = CryptoJS.enc.Utf8.parse("yK6DS3Rh@e1cXgg1") //十六位十六进制数作为密钥 1234123412ABCDEF CryptoJS.MD5("yK6DS3Rh@e1cXgg1")
+        this.iv = CryptoJS.enc.Utf8.parse('T%E3jQIml#9CDJ!g') //十六位十六进制数作为密钥偏移量 ABCDEF1234123412
+    }
+    // 解密方法- 对于解密端，应该包括：解密秘钥长度，秘钥，IV值，解密模式，PADDING方式
+    decryptCBC(word) {
+        // let encryptedHexStr = CryptoJS.enc.Hex.parse(word)
+        // let srcs = CryptoJS.enc.Base64.stringify(encryptedHexStr)
+        // let decrypt = CryptoJS.AES.decrypt(srcs, this.key, { iv: this.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.ZeroPadding })// CryptoJS.pad.Pkcs7 decrypt(srcs, ...)
+        // let decryptedStr = decrypt.toString(CryptoJS.enc.Utf8)
+
+        // return decryptedStr.toString()
+        let base64 = CryptoJS.enc.Base64.parse(word)
+        let srcs = CryptoJS.enc.Base64.stringify(base64)
+        let decrypt = CryptoJS.AES.decrypt(srcs, this.key, { iv: this.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.ZeroPadding })
+        let decryptedStr = decrypt.toString(CryptoJS.enc.Utf8)
+        return decryptedStr.toString()
+    }
+    // 加密方法- 对于加密端，应该包括：加密秘钥长度，秘钥，IV值，加密模式，PADDING方式
+    encryptCBC(word) {
+        let srcs = CryptoJS.enc.Utf8.parse(word)
+        let encrypted = CryptoJS.AES.encrypt(srcs, this.key, { iv: this.iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.ZeroPadding })
+
+        // return encrypted.ciphertext.toString().toUpperCase()
+        return CryptoJS.enc.Base64.stringify(encrypted.ciphertext)
+    }
+    decryptMd5(word) {
+        let hash = CryptoJS.MD5(this.key).toString();
+        return JSON.parse(CryptoJS.AES.decrypt(word, hash).toString(CryptoJS.enc.Utf8));
+    }
+    encryptMd5(word) {
+        let hash = CryptoJS.MD5(this.key).toString();
+        return CryptoJS.AES.encrypt(word, hash).toString();
+    }
+}
+
 class SocketIO {
     constructor(options) {
         // var _self = this
         this.wsUrl = ''
+        this.wsState = 0
         this.ws = null
         this.callback = function() {}
         this.sign = null
@@ -664,7 +963,7 @@ class SocketIO {
                 layer.msg(response.msg, { icon: 5 })
                 if (105 === response.code) {
                     ws.close()
-                } else if (107 === response.code) { //下线通知
+                } else if (107 === response.code) { //下线通知(抢登或者服务端token失效)
                     cookie.delete(business.session_key)
                     location.reload()
                 }
@@ -735,36 +1034,58 @@ class SocketIO {
     bindRequestData(params) {
         this.requestData = params
     }
+    send(data, aes) {
+        if (this.wsState < 0)
+            return false
+        aes = aes || true
+        let str = JSON.stringify(data)
+        if (aes) {
+            const aes = new CryptoJsAes()
+            str = aes.encryptCBC(str) //aes.encryptMd5(str)
+        }
+
+        this.ws.send(str)
+    }
     bindEvents() {
         // 连接成功后
         const _self = this
         this.ws.addEventListener('open', (event) => {
+            _self.wsState = 1
             console.log('Connection open ...')
             setTimeout(() => {
                 layer.closeAll('loading')
             }, 200, layer)
 
             if (!utils.isNull(_self.requestData)) {
-                _self.ws.send(JSON.stringify(_self.requestData))
+                // _self.ws.send(JSON.stringify(_self.requestData))
+                _self.send(_self.requestData)
             }
         })
 
         // 连接关闭后
         this.ws.addEventListener("close", (event) => {
+            _self.wsState = -1
             var code = event.code
             var reason = event.reason
             var wasClean = event.wasClean
             console.log({ code: code, reason: reason, wasClean: wasClean })
             console.log('Connection close ...')
             layer.closeAll('loading')
+            layer.closeAll('page')
+            const msg = '与服务器断开连接  <button class="btn btn-danger btn-sm" type="button" onclick="javascript:location.reload()">刷新试一试</button>'
+            $("#sys-msg").html(msg)
+            // setTimeout(() => {
+            //     location.reload()
+            // }, 500)
 
         })
 
         // 收到服务器数据后
         this.ws.addEventListener("message", (event) => {
+            _self.wsState = 2
             let data = event.data
             let json = JSON.parse(data)
-            let _self = this
+            // let _self = this
             if (102 === json.code) { // 广播更新用户
                 return _self.RegisterCallFunc.broadcastUsersCall(self.ws, json);
             } else if (100 === json.code) { // 通常状态下成功返回
@@ -798,6 +1119,11 @@ class SocketIO {
         // 连接失败
         this.ws.addEventListener("error", (event) => {
             console.log('Connection error ...')
+            layer.msg("服务器出错请稍候在试", { icon: 5 })
+            _self.wsState = -3
+            const msg = '服务器出错请稍候在试  <button class="btn btn-danger btn-sm" type="button" onclick="javascript:location.reload()">刷新试一试</button>'
+            $("#sys-msg").html(msg)
+            layer.closeAll('page')
             // 0 (CONNECTING)
             // 正在链接中
             // 1 (OPEN)
@@ -806,11 +1132,12 @@ class SocketIO {
             // 连接正在关闭
             // 3 (CLOSED)
             // 连接已关闭或者没有链接成功
-            const readyState = _self.ws.readyState
-            if (3 === readyState) {
-                layer.msg("服务器出错请稍候在试", { icon: 5 })
-                return false
-            }
+            // const readyState = _self.ws.readyState
+            // if (3 === readyState) {
+            //     layer.msg("服务器出错请稍候在试", { icon: 5 })
+            //     layer.closeAll('page')
+            //     return false
+            // }
         })
     }
 }
@@ -822,8 +1149,10 @@ $(document).ready(() => {
         business.socketIO = new SocketIO({
             wsUrl: 'ws://192.168.2.121:9502',
         })
+        $("#sys-msg").html('欢迎大家来到JSWOOLE聊天室')
         business.initManPage(true)
     } else {
+        $("#sys-msg").html('欢迎大家来到JSWOOLE聊天室  <button type="button" class="btn btn-info btn-sm" onclick="business.openLogin()">登录</button>')
         business.initManPage(false)
     }
 
