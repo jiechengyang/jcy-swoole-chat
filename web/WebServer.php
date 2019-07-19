@@ -75,6 +75,8 @@ function error_fatal($mask = NULL): ?string
 function autoLoader(string $class):void
 {
     global $config;
+    print_r($class);
+    echo PHP_EOL;
     if (isset($config['web']['path'][$class])) {
         require_once "" . $config['web']['path'][$class] . "";
         return;
@@ -135,16 +137,16 @@ $http->on('start', function(swoole_server $server) {
 ////    如果想使用Reload机制实现代码重载入，必须在onWorkerStart中require你的业务文件，而不是在文件头部。在onWorkerStart调用之前已包含的文件，不会重新载入代码。
 //});
 
-$http->on('connect', function(swoole_server $server, int $fd, int $reactorId) {
+$http->on('Connect', function(swoole_server $server, int $fd, int $reactorId) {
 //    有新的连接进入时，在worker进程中回调
 });
 
 $http->on('receive', function (swoole_server $serv, int $fd, int $reactor_id, $data) {
 });
 
-$http->on('request', [Http::class, 'receive']);
+$http->on('Request', ['Http::receive']);
 
-$http->on('close', function(swoole_server $server, int $fd, int $reactorId) {
+$http->on('Close', function(swoole_server $server, int $fd, int $reactorId) {
 
 });
 
