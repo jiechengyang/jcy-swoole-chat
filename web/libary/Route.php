@@ -38,6 +38,8 @@ class Route
 
     private $dispatcher;
 
+    private $currentController;
+
     public function __construct()
     {
         // $this->request = $request;
@@ -51,17 +53,17 @@ class Route
         // $this->uri = $this->server['request_uri'];
         $this->dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
             $r->addGroup('/user', function(FastRoute\RouteCollector $r) {
-                $userController = new UserController();
-                $r->addRoute(['GET', 'POST'], '/login', [$userController, 'actionLogin']);
-                $r->addRoute(['GET', 'POST'], '/reg', [$userController, 'actionReg']);
-                $r->addRoute(['GET'], '/view/{id:\d+}', [$userController, 'actionView']);
-                $r->addRoute(['POST'], '/delete/{id:\d+}', [$userController, 'actionDelete']);
+                $this->currentController = new UserController();
+                $r->addRoute(['GET', 'POST'], '/login', [$this->currentController, 'actionLogin']);
+                $r->addRoute(['GET', 'POST'], '/reg', [$this->currentController, 'actionReg']);
+                $r->addRoute(['GET'], '/view/{id:\d+}', [$this->currentController, 'actionView']);
+                $r->addRoute(['POST'], '/delete/{id:\d+}', [$this->currentController, 'actionDelete']);
             });
 
             $r->addGroup('/file', function(FastRoute\RouteCollector $r) {
-                $fileController = new FileController();
-                $r->addRoute('GET', '/index[/{id:\d+}[/{name}]]',  [$fileController, 'actionIndex']);
-                $r->addRoute('POST', '/upload', [$fileController, 'actionUpload']);
+                $this->currentController = new FileController();
+                $r->addRoute('GET', '/index[/{id:\d+}[/{name}]]',  [$this->currentController, 'actionIndex']);
+                $r->addRoute('POST', '/upload', [$this->currentController, 'actionUpload']);
             });
         });
     }
@@ -101,7 +103,12 @@ class Route
                 $handler = $this->routeInfo[1]; // 获得处理函数
                 $vars = $this->routeInfo[2]; // 获取请求参数
                 // ... call $handler with $vars // 调用处理函数
-                new \ReflectionClass($handler[0])->init($vars, self::$request, self::$response);
+//                $controller = new \ReflectionClass($handler[0]);
+//                $instance  = $controller->newInstanceArgs(); // 相当于实例化Person 类
+//                $method = $controller->getMethod('init');
+////                $method->invoke($instance);
+//                $method->invokeArgs($instance, [$vars, $request, $response]);
+                is_object($this->currentController) && $this->currentController->init($vars, $request, $response);
                 self::$response->end(call_user_func($handler, $vars));//[$vars, self::$request]
                 break;
         }
