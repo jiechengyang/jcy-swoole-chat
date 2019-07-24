@@ -554,9 +554,8 @@ let business = {
     },
     openWebSocket: () => {
         layer.load()
-        business.socketIO = new SocketIO({
-            wsUrl: 'ws://192.168.2.121:9502'
-        })
+        // wsUrl: 'ws://192.168.2.121:9502'
+        business.socketIO = new SocketIO()
     },
     initManPage: (sure, res) => {
         res = res || null
@@ -951,7 +950,7 @@ class CryptoJsAes {
 class SocketIO {
     constructor(options) {
         // var _self = this
-        this.wsUrl = ''
+        this.wsUrl = 'ws://192.168.2.120:9521'
         this.wsState = 0
         this.ws = null
         this.callback = function() {}
@@ -1146,9 +1145,7 @@ $(document).ready(() => {
     // 初始化检测登录相关
     if (business.isLogin()) {
         layer.load()
-        business.socketIO = new SocketIO({
-            wsUrl: 'ws://192.168.2.121:9502',
-        })
+        business.socketIO = new SocketIO()
         $("#sys-msg").html('欢迎大家来到JSWOOLE聊天室')
         business.initManPage(true)
     } else {
