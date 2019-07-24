@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 /**
  * Created by PhpStorm.
  * User: Administrator
@@ -9,13 +9,12 @@
 namespace App\controller;
 
 
-class FileController
+class FileController extends BaseController
 {
     public function actionIndex($vars = null)
     {
     	// var_dump(get_class_methods(get_class()));
-    	var_dump($vars);
-    	return "<h1>Hello World</h1>"; 
+    	return "<h1>Hello World</h1>";
     }
 
     public function actionUpload()

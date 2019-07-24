@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 /**
  * Created by PhpStorm.
  * User: Administrator
@@ -9,7 +9,7 @@
 namespace App\controller;
 
 
-class UserController
+class UserController extends BaseController
 {
     public function actionIndex()
     {

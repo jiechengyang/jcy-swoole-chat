@@ -101,6 +101,7 @@ class Route
                 $handler = $this->routeInfo[1]; // 获得处理函数
                 $vars = $this->routeInfo[2]; // 获取请求参数
                 // ... call $handler with $vars // 调用处理函数
+                var_dump($handler);
                 self::$response->end(call_user_func($handler, [$vars, self::$request]));
                 break;
         }
