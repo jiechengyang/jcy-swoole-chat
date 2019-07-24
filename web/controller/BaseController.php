@@ -21,11 +21,11 @@ class BaseController
     {
     }
 
-    public function init($vars):void
+    public function init($vars, $request, $response):void
     {
-        isset($vars[0]) && $this->vars = $vars[0];
-        isset($vars[1]) && $this->request = $vars[1];
-        isset($vars[2]) && $this->response = $vars[2];
+        $this->vars = $vars;
+        $this->request = $request;
+        $this->response = $response;
     }
 
     public function render():string

@@ -101,7 +101,7 @@ class Route
                 $handler = $this->routeInfo[1]; // 获得处理函数
                 $vars = $this->routeInfo[2]; // 获取请求参数
                 // ... call $handler with $vars // 调用处理函数
-                $handler[0]->init(self::$request, self::$response);
+                new \ReflectionClass($handler[0])->init($vars, self::$request, self::$response);
                 self::$response->end(call_user_func($handler, $vars));//[$vars, self::$request]
                 break;
         }
