@@ -136,6 +136,11 @@ $http->on('start', function(swoole_server $server) {
 
 $http->on('Connect', function(swoole_server $server, int $fd, int $reactorId) {
 //    有新的连接进入时，在worker进程中回调
+        $fdinfo = $server->getClientInfo($fd);
+        $connect_time = date('Y-m-d H:i:s', $fdinfo['connect_time']);
+        $last_time = date('Y-m-d H:i:s', $fdinfo['last_time']);
+        $msg = "fid#{$fd}reactorId#{$reactorId},  remote_ip#{$fdinfo['remote_ip']},  remote_port#{$fdinfo['remote_port']},  connect_time#{$connect_time},  last_time#{$last_time}";
+        echo $msg, PHP_EOL;
 });
 
 $http->on('receive', function (swoole_server $serv, int $fd, int $reactor_id, $data) {

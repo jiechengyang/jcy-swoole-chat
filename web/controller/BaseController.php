@@ -33,8 +33,8 @@ class BaseController
 
     }
 
-    public function callback():string
+    public function callback($data):string
     {
-
+        return json_encode($data);
     }
 }

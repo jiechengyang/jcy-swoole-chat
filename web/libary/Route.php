@@ -63,7 +63,7 @@ class Route
             $r->addGroup('/file', function(FastRoute\RouteCollector $r) {
                 $this->currentController = new FileController();
                 $r->addRoute('GET', '/index[/{id:\d+}[/{name}]]',  [$this->currentController, 'actionIndex']);
-                $r->addRoute('POST', '/upload', [$this->currentController, 'actionUpload']);
+                $r->addRoute('POST', '/upload/{type}', [$this->currentController, 'actionUpload']);
             });
         });
     }
