@@ -60,7 +60,7 @@ return [
         'password' => '',
         'timeout' => 2.5,
         'reserved' => NULL,
-        'retry_interval' => NULL,
+        'retry_interval' => '',
         'read_timeout' => 100,
         'persistent_id' => 'JSWOOLE'
     ],
