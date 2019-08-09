@@ -950,7 +950,7 @@ class CryptoJsAes {
 class SocketIO {
     constructor(options) {
         // var _self = this
-        this.wsUrl = 'ws://192.168.2.120:9521'
+        this.wsUrl = 'ws://192.168.2.120:9502'
         this.wsState = 0
         this.ws = null
         this.callback = function() {}

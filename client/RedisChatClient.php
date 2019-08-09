@@ -79,7 +79,7 @@ class RedisChatClient implements BaseClient
         }
 
         if (!self::$FdMapping) {
-            self::$FdMapping = new \chat\libs\FdMapping(false);
+            self::$FdMapping = new \chat\client\mapping\FdMapping(false);
         }
 
         self::showMsg('display', "server#{$ws->worker_pid}: handshake success with fd#{$request->fd}");
