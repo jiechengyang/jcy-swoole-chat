@@ -9,14 +9,24 @@
 namespace App\controller;
 
 
+/**
+ * Class FileController
+ * @package App\controller
+ */
 class FileController extends BaseController
 {
+    /**
+     * @param null $vars
+     * @return string
+     */
     public function actionIndex($vars = null)
     {
-    	// var_dump(get_class_methods(get_class()));
     	return "<h1>Hello World</h1>";
     }
 
+    /**
+     * @return string
+     */
     public function actionUpload()
     {
     	$this->response->header('content-type', 'application/json; charset=UTF-8', true);

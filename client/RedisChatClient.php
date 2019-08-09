@@ -46,7 +46,7 @@ class RedisChatClient implements BaseClient
         $type = $data['type'];
         $fdMapping = null;
         if (!$fdMapping) {
-            $fdMapping = new \chat\libs\FdMapping(false);
+            $fdMapping = new \chat\client\mapping\FdMapping(false);
         }
 
         $res = $this->__broadcast($ws, $fd, $type, $fdMapping);

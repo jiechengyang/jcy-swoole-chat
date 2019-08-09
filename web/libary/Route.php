@@ -42,16 +42,11 @@ class Route
 
     public function __construct()
     {
-        // $this->request = $request;
-        // self::$response = $response;
-        // $this->header = $this->request->header;
-        // $this->server = $this->request->server;
-        // $this->queryParams = $this->request->get;
-        // $this->postData = $this->request->post;
-        // $this->__FILES = $this->request->files;
-        // $this->httpMethod = $this->server['request_method'];
-        // $this->uri = $this->server['request_uri'];
         $this->dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
+            $r->addRoute('GET', '/', function(){
+                return 'Hello, World';
+            });
+
             $r->addGroup('/user', function(FastRoute\RouteCollector $r) {
                 $this->currentController = new UserController();
                 $r->addRoute(['GET', 'POST'], '/login', [$this->currentController, 'actionLogin']);
