@@ -504,7 +504,7 @@ let business = {
         let chatLayer = utils.openPage(1, title, html, params)
         let muid = cookie.get(business.session_key)
         let msgs = business.getStorageMsg(muid, uid)
-        // console.log('我俩的记录:' + msgs);
+            // console.log('我俩的记录:' + msgs);
         if (!utils.isNull(msgs)) {
             for (let i = 0; i < msgs.length; i++) {
                 const user = business.getUser(msgs[i][0])
@@ -537,7 +537,7 @@ let business = {
             e.preventDefault()
             if (msg.length > 1000) {
                 layer.msg("字数超过限制，最多只能发送1000字", { icon: 5 })
-                // msg = msg.substring(0, 1000)
+                    // msg = msg.substring(0, 1000)
                 return false
             }
 
@@ -550,13 +550,13 @@ let business = {
 
             const load = layer.load()
             business.socketIO.RegisterCallFunc.successCall = (ws, response) => {
-                business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
-                dom.value = ''
-                layer.close(load)
-                return true;
-            }
-            // business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
-            // dom.value = ''
+                    business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
+                    dom.value = ''
+                    layer.close(load)
+                    return true;
+                }
+                // business.createChatSendMsg(cookie.get(business.session_key), $(dom).data('to'), msg, new Date().getTime())
+                // dom.value = ''
         }
     },
     createChatSendMsg: (from, to, msg, time) => {
@@ -565,7 +565,7 @@ let business = {
         if (!user)
             return
         const createTime = utils.toDate(time)
-        // console.log('我发送给别人的信息#from:' + from + '#to:' + to)
+            // console.log('我发送给别人的信息#from:' + from + '#to:' + to)
         business.creatChatDom(user, to, msg, createTime)
         business.saveChatMsgByCache(from, to, msg, createTime)
     },
@@ -576,10 +576,10 @@ let business = {
             return
         business.chat(from)
         const createTime = utils.toPhpDate(time)
-        // console.log('我收到别人发给我的信息#to:' + to + '#from' + from)
+            // console.log('我收到别人发给我的信息#to:' + to + '#from' + from)
         business.creatChatDom(user, from, msg, createTime)
-        // business.saveChatMsgByCache(to, from, msg, createTime)
-        // business.saveChatMsgByCache(from, to, msg, createTime)
+            // business.saveChatMsgByCache(to, from, msg, createTime)
+            // business.saveChatMsgByCache(from, to, msg, createTime)
         business.saveChatMsgByCache(to, from, msg, createTime, 2)
     },
 
@@ -798,14 +798,14 @@ class SocketIO {
         // 连接失败
         this.ws.addEventListener("error", (event) => {
             console.log('Connection error ...')
-            // 0 (CONNECTING)
-            // 正在链接中
-            // 1 (OPEN)
-            // 已经链接并且可以通讯
-            // 2 (CLOSING)
-            // 连接正在关闭
-            // 3 (CLOSED)
-            // 连接已关闭或者没有链接成功
+                // 0 (CONNECTING)
+                // 正在链接中
+                // 1 (OPEN)
+                // 已经链接并且可以通讯
+                // 2 (CLOSING)
+                // 连接正在关闭
+                // 3 (CLOSED)
+                // 连接已关闭或者没有链接成功
             const readyState = _self.ws.readyState
             if (3 === readyState) {
                 layer.msg("服务器出错请稍候在试", { icon: 5 })
@@ -832,32 +832,32 @@ $(document).ready(() => {
 
     // 时间器
     setInterval(() => {
-        utils.displayRealTime('current_time')
-    }, 1000)
-    // business.ladda.toggle()
-    // business.ladda.setProgress( 0 )
-    // console.log(Ladda.bind( 'button#loginBtn'))//, { timeout: 2000 } 
-    /* 登录注册 event bind start */
+            utils.displayRealTime('current_time')
+        }, 1000)
+        // business.ladda.toggle()
+        // business.ladda.setProgress( 0 )
+        // console.log(Ladda.bind( 'button#loginBtn'))//, { timeout: 2000 } 
+        /* 登录注册 event bind start */
     const bindEvent = () => {
-        // 登录btn
-        $("a#loginModalBtn").on('click', (event) => {
-            layer.close(business.loginLayer)
-            business.loginLayer = null
-            utils.openPage(1, false, $("#loginModal").html())
-        })
-
-        // 注册btn
-        $("a#registerModalBtn").on('click', (event) => {
-            layer.close(business.loginLayer)
-            utils.openPage(1, false, $("#registerModal").html(), {
-                area: ['600px', '550px']
+            // 登录btn
+            $("a#loginModalBtn").on('click', (event) => {
+                layer.close(business.loginLayer)
+                business.loginLayer = null
+                utils.openPage(1, false, $("#loginModal").html())
             })
-        })
 
-        // 按钮提交
-        $("form.chart-form").on('click', "button.chart-submit", () => {
-            business.submitData(this)
-        })
-    }
-    /* 登录注册 event bind end */
+            // 注册btn
+            $("a#registerModalBtn").on('click', (event) => {
+                layer.close(business.loginLayer)
+                utils.openPage(1, false, $("#registerModal").html(), {
+                    area: ['600px', '550px']
+                })
+            })
+
+            // 按钮提交
+            $("form.chart-form").on('click', "button.chart-submit", () => {
+                business.submitData(this)
+            })
+        }
+        /* 登录注册 event bind end */
 })
