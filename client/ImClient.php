@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 /**
  * 即时通讯升级版
  * @Authors jiechengyang (2064320087@qq.com)

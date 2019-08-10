@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @script   Color.php
  * @brief    Color wrapper for ShellColor
@@ -6,6 +6,7 @@
  * @version  1.0.0
  * @modify   2018-09-28
  */
+
 namespace chat\helper;
 
 // require_once 'ShellColor.php';
@@ -13,9 +14,9 @@ namespace chat\helper;
 class Color
 {
     /**
-     * @brief    show info in level 
+     * @brief    show info in level
      *
-     * @param    string  $text
+     * @param    string $text
      *
      * @return   string
      */
@@ -25,9 +26,9 @@ class Color
     }
 
     /**
-     * @brief    show warn in level 
+     * @brief    show warn in level
      *
-     * @param    string  $text
+     * @param    string $text
      *
      * @return   string
      */
@@ -39,7 +40,7 @@ class Color
     /**
      * @brief    show error in level
      *
-     * @param    string  $text
+     * @param    string $text
      *
      * @return   string
      */
@@ -51,9 +52,9 @@ class Color
     /**
      * @brief    get colorful text
      *
-     * @param    string  $text
-     * @param    string  $fg
-     * @param    string  $bg
+     * @param    string $text
+     * @param    string $fg
+     * @param    string $bg
      *
      * @return   string
      */
@@ -65,9 +66,9 @@ class Color
     /**
      * @brief    display colorful custom text -> will be removed in future !!!
      *
-     * @param    string  $text
-     * @param    string  $fg
-     * @param    string  $bg
+     * @param    string $text
+     * @param    string $fg
+     * @param    string $bg
      *
      * @return   none
      */
@@ -79,9 +80,9 @@ class Color
     /**
      * @brief    show colorful custom text  -> recommed to use
      *
-     * @param    string  $text
-     * @param    string  $fg
-     * @param    string  $bg
+     * @param    string $text
+     * @param    string $fg
+     * @param    string $bg
      *
      * @return   none
      */

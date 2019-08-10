@@ -1,0 +1,228 @@
+<body style="">
+    <div id="zone_left" onselectstart="return false;" style="display: block;">
+        <div style="height:150px;margin-left:10px;">
+            <img style="float:left;" src="IMG/logo.png">
+            <div style="float:left;color:orange; font-size:35px;font-weight:900;margin-left:25px;margin-top:30px;">来聊吧</div>
+            <div style="clear:both;color:gray;text-align:center;">但关键是——你说啥？</div>
+        </div>
+        <div style="height:75px;">
+            <div class="input-group">
+                <span class="input-group-addon" style="color:orange;">昵称</span>
+                <input id="inp_nickname" type="text" maxlength="10" class="form-control">
+                <span id="btn_getnick" class="input-group-btn"><button class="btn btn-default" type="button"><span style="color:orange;" class="glyphicon glyphicon-refresh"></span></button></span>
+                <span id="btn_inroom" class="input-group-btn"><button class="btn btn-default" type="button"><span style="color:green;" class="glyphicon glyphicon-home"></span></button></span>
+            </div>
+            <div id="user_count" class="list-group-item list-group-item-success" style="cursor:pointer;"><span id="nowusers_count" class="badge" style="background-color:green;">2</span><span style="margin-right:5px;" class="glyphicon glyphicon-comment"></span>当前在线人数</div>
+        </div>
+        <div id="user_list" class="list-group" style="overflow-y: auto; height: 750px;"><a id="userid_1056f065" style="color:black" class="list-group-item" onfocus="this.blur()" onclick="click_userlist(id);"><span class="badge"></span><span style="margin-right:5px;" class="glyphicon glyphicon-user"></span><span class="nickname">奔腾的空姐</span></a></div>
+    </div>
+    <div id="zone_center" style="float: left; margin-left: 10px; margin-top: 10px;">
+        <div id="div_msgpanel" class="panel panel-success" style="width: 925.08px; height: 775px;">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <span id="msg_title" style="font-weight:900;">公共场所</span>
+                    <img id="msg_tips" title="声音提醒" style="cursor:pointer;width:25px;float:right;" src="IMG/sound_on.png">
+                    <img id="msg_clear" title="消息清空" style="cursor:pointer;width:25px;float:right;margin-right:15px;" src="IMG/msgclear.png">
+                    <img id="msg_back" title="消息撤回" style="cursor:pointer;width:25px;float:right;margin-right:15px;" src="IMG/msgback.png">
+                    <img id="sharelink" title="分享链接" style="cursor:pointer;width:25px;float:right;margin-right:15px;" src="IMG/share.png">
+                </div>
+                <audio id="msg_sound" src="PLUG/tip.mp3"></audio>
+            </div>
+            <div id="div_msgbox" class="panel-body" style="overflow-y: auto; height: 729px;">
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">开关的整熨工</span> <span style="color:#d2d2d2;">15:36:48</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="b57e25c715_36_48" class="chat" style="max-width:873px;"><img src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/cc/haqianv2_thumb.gif"><br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">上面的大熊</span> <span style="color:#d2d2d2;">15:38:54</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="bcbdc0ca15_38_54" class="chat" style="max-width:873px;"><a href="IMG/Upload/bcbdc0ca/141e811fadad4c3bbec6.jpg" target="_blank"><img onerror="errpic(this)" style="max-width:812.24px;" src="IMG/Upload/bcbdc0ca/141e811fadad4c3bbec6.jpg"></a><br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">娇美的虱子</span> <span style="color:#d2d2d2;">15:46:38</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="2ab1f7d415_46_38" class="chat" style="max-width:873px;">打发<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">欢呼雀跃的书包</span> <span style="color:#d2d2d2;">15:51:32</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="3057d1b315_51_32" class="chat" style="max-width:873px;">？<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">生死的木瓜</span> <span style="color:#d2d2d2;">15:54:20</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="ab17e4d215_54_20" class="chat" style="max-width:873px;">。。。<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">欢呼雀跃的书包</span> <span style="color:#d2d2d2;">15:56:43</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="3057d1b315_56_43" class="chat" style="max-width:873px;"><a href="IMG/Upload/3057d1b3/1a29fbdb3b52432fa038.jpg" target="_blank"><img onerror="errpic(this)" style="max-width:812.24px;" src="IMG/Upload/3057d1b3/1a29fbdb3b52432fa038.jpg"></a><br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">欢呼雀跃的书包</span> <span style="color:#d2d2d2;">16:00:18</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="3057d1b316_00_18" class="chat" style="max-width:873px;"><a href="IMG/Upload/3057d1b3/ae06216a91d940a992bf.jpg" target="_blank"><img onerror="errpic(this)" style="max-width:812.24px;" src="IMG/Upload/3057d1b3/ae06216a91d940a992bf.jpg"></a><br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">老头的脸盆</span> <span style="color:#d2d2d2;">16:01:35</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="1056f06516_01_35" class="chat" style="max-width:873px;">老头的脸盆<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">欢呼雀跃的书包</span> <span style="color:#d2d2d2;">16:02:50</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="3057d1b316_02_50" class="chat" style="max-width:873px;"><a href="IMG/Upload/3057d1b3/f3178beb73354e2eb629.jpg" target="_blank"><img onerror="errpic(this)" style="max-width:812.24px;" src="IMG/Upload/3057d1b3/f3178beb73354e2eb629.jpg"></a><br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">过斑马线的摄影师</span> <span style="color:#d2d2d2;">16:13:03</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="07cf16f716_13_03" class="chat" style="max-width:873px;">你好<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">滨崎步的装订机</span> <span style="color:#d2d2d2;">16:16:57</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="3155c44716_16_57" class="chat" style="max-width:873px;">&lt;img&nbsp;src="http://image.baidu.com/search/detail?ct=503316480&amp;z=0&amp;ipn=d&amp;word=%E5%9B%BE%E7%89%87&amp;hs=0&amp;pn=0&amp;spn=0&amp;di=177760&amp;pi=0&amp;rn=1&amp;tn=baiduimagedetail&amp;is=0%2C0&amp;ie=utf-8&amp;oe=utf-8&amp;cl=2&amp;lm=-1&amp;cs=3300305952%2C1328708913&amp;os=188573792%2C343995474&amp;simid=4174703319%2C828922280&amp;adpicid=0&amp;lpn=0&amp;ln=30&amp;fr=ala&amp;fm=&amp;sme=&amp;cg=&amp;bdtype=0&amp;oriquery=&amp;objurl=http%3A%2F%2Fpic37.nipic.com%2F20140113%2F8800276_184927469000_2.png&amp;fromurl=ippr_z2C%24qAzdH3FAzdH3Fooo_z%26e3Bgtrtv_z%26e3Bv54AzdH3Ffi5oAzdH3F9AzdH3F898AzdH3Fl"&gt;<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">老头的脸盆</span> <span style="color:#d2d2d2;">16:17:34</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="1056f06516_17_34" class="chat" style="max-width:873px;"><a href="IMG/Upload/1056f065/5cbec06a4c2f4240a5ab.jpg" target="_blank"><img onerror="errpic(this)" style="max-width:812.24px;" src="IMG/Upload/1056f065/5cbec06a4c2f4240a5ab.jpg"></a><br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">过斑马线的摄影师</span> <span style="color:#d2d2d2;">16:17:46</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="07cf16f716_17_46" class="chat" style="max-width:873px;">你好<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">老头的脸盆</span> <span style="color:#d2d2d2;">16:18:36</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="1056f06516_18_36" class="chat" style="max-width:873px;">今天马云做了个噩梦,梦到自己变成了百万富翁<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">无节操的沙和尚</span> <span style="color:#d2d2d2;">16:20:47</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="b123b4d416_20_47" class="chat" style="max-width:873px;">hhhh<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">呼吸的鼠</span> <span style="color:#d2d2d2;">16:21:16</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="c9ccd9f916_21_16" class="chat" style="max-width:873px;"><img src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/c8/lxhzuiyou_thumb.gif"><br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">呼吸的鼠</span> <span style="color:#d2d2d2;">16:21:38</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="c9ccd9f916_21_38" class="chat" style="max-width:873px;">有人吗？<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">奔腾的空姐</span> <span style="color:#d2d2d2;">16:23:59</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="1056f06516_23_59" class="chat" style="max-width:873px;">谁能告诉我这个webSocket来聊吧是干什么用的<br></div>
+                </div>
+                <div class="clearboth"></div>
+                <div class="chatbox" style="float:left">
+                    <div style="text-align:left"><span style="font-weight:900;color:#6d6d6d">天高的黑樱桃</span> <span style="color:#d2d2d2;">16:47:48</span></div>
+                    <div class="chatarrow" style="left:5px;border-bottom: 8px solid #cfffcf;"></div>
+                    <div id="e057a2a616_47_48" class="chat" style="max-width:873px;">sadasd<br></div>
+                </div>
+                <div class="clearboth"></div>
+            </div>
+            <div id="div_privmsg" class="panel-body" style="overflow-y: auto; display: none; height: 729px;"></div>
+        </div>
+        <div style="position:relative;left:0px;bottom:10px;">
+            <div style="float:left;margin-top:4px;">
+                <a class="emoji" style="margin-right:10px;" data-toggle="popover" data-placement="top" title="表情"><img style="outline-width:40px;" class="img_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/5c/huanglianwx_thumb.gif"></a>
+                <a id="a_uploadimg" style="margin-right:10px;" title="上传图片"><img style="padding-top:4px;" class="img_uploadimg" src="IMG/uploadpic.png"></a>
+                <a id="a_uploadfile" style="margin-right:10px;" title="上传文件"><img src="IMG/uploadfile.png"></a>
+                <input id="uploading_file" type="file" style="display:none;">
+                <a id="a_doodle" style="margin-right:10px;" title="涂鸦"><img src="IMG/doodle.png"></a>
+                <a style="cursor:default;margin-right:10px;">|</a>
+                <a id="a_getphoto" style="margin-right:10px;" title="拍照"><img src="IMG/camera.png"></a>
+                <a id="a_record" style="margin-right:10px;" title="录音"><img src="IMG/record.png"></a>
+            </div>
+            <div style="float:right;">
+                <span style="color:gray;font-size:12px;">ctrl+回车发送</span>
+                <button id="btn_conn" type="button" class="btn btn-warning" disabled="disabled">连接</button>
+                <button id="btn_say" type="button" class="btn btn-success">我要说几句</button>
+            </div>
+        </div>
+        <div style="clear:both">
+            <textarea id="inp_say" maxlength="500" placeholder="点击左侧用户可私聊" class="form-control" style="height:125px;resize:none;"></textarea>
+        </div>
+    </div>
+    <div id="zone_right">
+        <div class="hotrooms_title" style="font-size: 16px; font-weight: 900; color: green; margin-top: 20px; margin-left: 10px; height: 35px; border-bottom: 1px solid rgb(214, 233, 198); width: 613.92px;">热门房间</div>
+        <div id="hotrooms" style="overflow-y: auto; height: 577px;">
+            <div class="class_hotrooms" onclick="click_hotroom(&quot;公共场所&quot;,&quot;0&quot;)">
+                <div style="color:#ffe6b8;margin-right:5px;" class="glyphicon glyphicon-home"></div>
+                <div class="label label-info" style="margin-right:5px;">112</div>公共场所<div style="color:orange;margin-left:5px;" class=""></div>
+            </div>
+            <div class="class_hotrooms" onclick="click_hotroom(&quot;约炮圣地（123）&quot;,&quot;0&quot;)">
+                <div style="color:#ffe6b8;margin-right:5px;" class="glyphicon glyphicon-home"></div>
+                <div class="label label-info" style="margin-right:5px;">25</div>约炮圣地（123）<div style="color:orange;margin-left:5px;" class=""></div>
+            </div>
+            <div class="class_hotrooms" onclick="click_hotroom(&quot;做爱区&quot;,&quot;0&quot;)">
+                <div style="color:#ffe6b8;margin-right:5px;" class="glyphicon glyphicon-home"></div>
+                <div class="label label-info" style="margin-right:5px;">2</div>做爱区<div style="color:orange;margin-left:5px;" class=""></div>
+            </div>
+            <div class="class_hotrooms" onclick="click_hotroom(&quot;码畜专区&quot;,&quot;0&quot;)">
+                <div style="color:#ffe6b8;margin-right:5px;" class="glyphicon glyphicon-home"></div>
+                <div class="label label-info" style="margin-right:5px;">2</div>码畜专区<div style="color:orange;margin-left:5px;" class=""></div>
+            </div>
+            <div class="class_hotrooms" onclick="click_hotroom(&quot;渣男房间&quot;,&quot;0&quot;)">
+                <div style="color:#ffe6b8;margin-right:5px;" class="glyphicon glyphicon-home"></div>
+                <div class="label label-info" style="margin-right:5px;">0</div>渣男房间<div style="color:orange;margin-left:5px;" class=""></div>
+            </div>
+        </div>
+        <div class="hotrooms_title" style="font-size: 18px; font-weight: 900; color: orange; margin-top: 20px; margin-left: 10px; height: 35px; border-bottom: 1px solid rgb(214, 233, 198); width: 613.92px;">下载来聊吧</div>
+        <div style="height:100px;">
+            <a href="http://www.blue-zero.com/sf/WebSocket来聊吧v105.zip?v=2" target="_blank">
+                <img src="IMG/download.png" style="height:70px;margin:20px 20px;"><span style="color:orange;font-size:18px;text-decoration:underline; ">WebSocket来聊吧下载</span>
+            </a>
+        </div>
+        <div class="hotrooms_title" style="font-size: 16px; font-weight: 900; color: green; margin-top: 20px; margin-left: 10px; height: 35px; border-bottom: 1px solid rgb(214, 233, 198); width: 613.92px;">联系作者</div>
+        <div style="margin-top:10px;margin-left:10px;float:left;">
+            <div style="font-size:15px;">
+                Websocket来聊吧<br>
+                完整源码请联系作者
+                <br><img src="img/wexin.png" height="30"><span style="font-size:20px;font-weight:900;color:green">微信：yaohuang46</span>
+                <br><img src="img/qq.png" height="30"><span style="font-size:20px;font-weight:900;color:green">Q Q：114687576</span>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="JS/min/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="JS/min/layer/layer.js"></script>
+    <script type="text/javascript" src="JS/min/laypage/laypage.js"></script>
+    <script type="text/javascript" src="JS/min/jpegencoder.js?v=20160711"></script>
+    <script type="text/javascript" src="JS/min/index.js?v=20180521"></script>
+    <div id="qb-sougou-search" style="display: none; opacity: 0;">
+        <p>搜索</p>
+        <p class="last-btn">复制</p><iframe src=""></iframe>
+    </div>
+    <div class="layui-layer layui-anim-05 layui-layer-tips " id="layui-layer43" type="tips" times="43" showtime="0" contype="object" style="z-index: 19891057; width: 390px; height: 300px; position: absolute; left: 316.141px; top: 491.766px;">
+        <div id="" class="layui-layer-content" style="height: 290px; background-color: rgb(255, 255, 255);">
+            <div id="uploadimg_list" style="height:250px;">
+                <div style="height:64px;float:left;margin:25px 5px;"><img id="uploadimgitem_KsFFtMWWhlVqv5HQsoelwQ_jpg" onclick="click_selimg(id);" onmouseover="mouseover_zoomimg(id);" onmouseout="mouseout_closezoom();" style="height:64px;width:64px;" src="IMG/Upload/0a5337ad/KsFFtMWWhlVqv5HQsoelwQ.jpg"></div>
+                <div style="height:64px;float:left;margin:25px 5px;"><img id="uploadimgitem_hA8q4Zhvxsl3SHlqxUF3Zg_png" onclick="click_selimg(id);" onmouseover="mouseover_zoomimg(id);" onmouseout="mouseout_closezoom();" style="height:64px;width:64px;" src="IMG/Upload/0a5337ad/hA8q4Zhvxsl3SHlqxUF3Zg.png"></div>
+            </div><button id="uploadimg_upload" class="btn btn-default uploadimg" type="button"><span style="color:orange;margin-right:5px;" class="glyphicon glyphicon-picture"></span><span class="sp_uploadimg">上传</span></button>
+            <div id="uploadimg_pages" style="float:right;margin-top:5px;"></div><i class="layui-layer-TipsG layui-layer-TipsT" style="border-right-color: rgb(255, 255, 255);"></i>
+        </div><span class="layui-layer-setwin"></span>
+    </div>
+</body>

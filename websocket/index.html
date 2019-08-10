@@ -8,6 +8,7 @@
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="static/js/ladda/css/ladda.min.css">
     <link rel="stylesheet" href="static/js/mouse-right/context.standalone.css">
+    <link rel="stylesheet" href="static/js/laypage/skin/laypage.css">
     <link rel="stylesheet" href="static/css/chart.css">
 </head>
 
@@ -30,9 +31,7 @@
                                         <div class="message">
                                             <a class="message-author" href="#"> 系统信息</a>
                                             <span class="message-date" id="current_time"></span>
-                                            <span class="message-content">
-                                                欢迎大家来到JSWOOLE聊天室
-                                            </span>
+                                            <span class="message-content" id="sys-msg"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -49,7 +48,7 @@
                         </div>
                     </div>
                     <!-- 发送消息窗口 s-->
-                    <!--                     <div class="row hide" id="chat-message-form">
+                    <!--                     <div class="row " id="chat-message-form">
                         <div class="col-sm-12">
                             <div class="chat-message-form">
                                 <div class="form-group">
@@ -138,6 +137,12 @@
 <!-- <script src="static/js/ladda/js/ladda.jquery.min.js"></script> -->
 <!-- <script src="https://cdn.bootcss.com/layer/2.3/layer.js"></script> -->
 <script src="static/js/layer-v3.1.1/layer.js"></script>
-<script type="text/javascript" src="static/js/chat.core.js"></script>
+<script src="static/js/laypage/laypage.js"></script>
+<script src="static/js/lrz.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/crypto-js/3.1.9-1/core.min.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/crypto-js/3.1.9-1/aes.min.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/crypto-js/3.1.9-1/enc-base64.min.js"></script>
+<script type="text/javascript" src="static/js/chat.core.js?v=1.0.0"></script>
 
 </html>

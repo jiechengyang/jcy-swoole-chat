@@ -1,0 +1,16 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "websocket chat & swoole",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm start",
+    "server": "node httpServer.js"
+  },
+  "keywords": [
+    "chat",
+    "websocket"
+  ],
+  "author": "yangjiecheng",
+  "license": "Apache-2.0"
+}

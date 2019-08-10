@@ -215,3 +215,7 @@ label.required:after {
     position: static;
     /*height: 100px;*/
 }
+.item_emoji {
+    line-height: 32px;
+    margin-left: 5px;
+}
