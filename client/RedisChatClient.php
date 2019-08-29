@@ -12,14 +12,34 @@ use chat\helper\Color;
 use \Swoole\Timer;
 use \swoole_table;
 use chat\libs\Aes;
+use chat\client\mapping\FdMapping;
 use chat\Application as JSWOOLE;
 
 class RedisChatClient implements BaseClient
 {
-    private static $FdMapping = null;
+    /**
+     * @var null
+     */
+    private $fdMapping;
 
+    /**
+     *
+     */
     const BROADCAT_TYPE = 1;
 
+    public function getFdMapping(): FdMapping
+    {
+        return $this->fdMapping;
+    }
+    
+    public function setFdMapping(FdMapping $fdMapping)
+    {
+        $this->fdMapping = $fdMapping;
+    }
+    
+    /**
+     * @param $server
+     */
     public function onStart($server)
     {
         self::showMsg('display', "Server: start.Swoole version is [" . SWOOLE_VERSION . "]");
@@ -27,18 +47,31 @@ class RedisChatClient implements BaseClient
         self::showMsg('display', "MasterPid={$server->master_pid}|Manager_pid={$server->manager_pid}");
     }
 
+    /**
+     * @param \swoole_server $serv
+     */
     public function onManagerStart(\swoole_server $serv)
     {
         // echo PHP_EOL, 'event: onManagerStart', PHP_EOL;
     }
 
+    /**
+     * @param \swoole_server $server
+     * @param int $worker_id
+     */
     public function onWorkerStart(\swoole_server $server, int $worker_id)
     {
         // var_dump($server, $worker_id);
         // echo PHP_EOL, 'event: onWorkerStart', PHP_EOL;
     }
 
-    // 此功能用于将慢速的任务异步地去执行，比如一个聊天室服务器，可以用它来进行发送广播
+    /**
+     * 此功能用于将慢速的任务异步地去执行，比如一个聊天室服务器，可以用它来进行发送广播
+     * @param $ws
+     * @param int $task_id
+     * @param int $src_worker_id
+     * @param $data
+     */
     public function onTask($ws, int $task_id, int $src_worker_id, $data)
     {
         self::showMsg('display', "#{$ws->worker_id}\tonTask: [PID={$ws->worker_pid}]: task_id=$task_id");
@@ -46,7 +79,7 @@ class RedisChatClient implements BaseClient
         $type = $data['type'];
         $fdMapping = null;
         if (!$fdMapping) {
-            $fdMapping = new \chat\client\mapping\FdMapping(false);
+            $fdMapping = new FdMapping(false);
         }
 
         $res = $this->__broadcast($ws, $fd, $type, $fdMapping);
@@ -57,12 +90,24 @@ class RedisChatClient implements BaseClient
         ]);
     }
 
+
+    /**
+     * @param $serv
+     * @param int $task_id
+     * @param $data
+     */
     public function onFinish($serv, int $task_id, $data)
     {
         self::showMsg('display', "Task#$task_id finished");
         $fd = $data['fd'];
     }
 
+
+    /**
+     * @param $server
+     * @param int $fd
+     * @param int $reactorId
+     */
     public function onConnect($server, int $fd, int $reactorId)
     {
         $fdinfo = $server->getClientInfo($fd);
@@ -72,19 +117,30 @@ class RedisChatClient implements BaseClient
         self::showMsg('display', $msg);
     }
 
+    /**
+     * @param $ws
+     * @param $request
+     * @return bool
+     */
     public function onOpen($ws, $request)
     {
         if (!$ws->isEstablished($request->fd)) {
             return $this->disconnect($ws, $request->fd, "Not a standard websocket protocol");
         }
 
-        if (!self::$FdMapping) {
-            self::$FdMapping = new \chat\client\mapping\FdMapping(false);
+        if (!$this->getFdMapping()) {
+//            $this->getFdMapping() = new FdMapping(false);
+            $this->setFdMapping(new FdMapping(false));
         }
 
         self::showMsg('display', "server#{$ws->worker_pid}: handshake success with fd#{$request->fd}");
     }
 
+    /**
+     * @param $ws
+     * @param $frame
+     * @return bool|null
+     */
     public function onMessage($ws, $frame)
     {
         self::showMsg('showInfo', "Message: {$frame->data}");
@@ -99,10 +155,8 @@ class RedisChatClient implements BaseClient
         switch ($data['type']) {
             case 'sign':
                 return $this->__sign($ws, $frame->fd, $data);
-                break;
             case 'register':
                 return $this->__register($ws, $frame->fd, $data);
-                break;
             case 'users':
                 return $this->__getUsers($ws, $frame->fd, $data);
             case 'logout':
@@ -114,7 +168,13 @@ class RedisChatClient implements BaseClient
         }
     }
 
-    private function __chat($ws, int $fd, array $data)
+    /**
+     * @param $ws
+     * @param int $fd
+     * @param array $data
+     * @return bool|null
+     */
+    private function __chat($ws, int $fd, array $data): ?bool
     {
         // task process
         if (empty($data['to'])) {
@@ -125,7 +185,7 @@ class RedisChatClient implements BaseClient
             return $this->disconnect($ws, $fd, "Please input msg");
         }
 
-        $uid = self::$FdMapping->getUidByFd($fd);
+        $uid = $this->getFdMapping()->getUidByFd($fd);
         if (empty($uid)) {
             return $this->disconnect($ws, $fd, "The Sender doesn't exist.");
         }
@@ -140,21 +200,27 @@ class RedisChatClient implements BaseClient
             ], 'send msg success', 104);
         } else {
             //offline save
-            $to_fd = self::$FdMapping->getFdByUid($data['to']);
-            self::$FdMapping->saveChatMsg($uid, $data['to'], $data['body']);
+            $to_fd = $this->getFdMapping()->getFdByUid($data['to']);
+            $this->getFdMapping()->saveChatMsg($uid, $data['to'], $data['body']);
             $r = $this->successSend($ws, $to_fd, ['offline' => 1], 'send msg to_fd success', 104);
         }
 
         return $this->successSend($ws, $fd, [], 'send msg success - ' . $fd);
     }
 
-    private function __sign($ws, int $fd, array $data)
+    /**
+     * @param $ws
+     * @param int $fd
+     * @param array $data
+     * @return bool|null
+     */
+    private function __sign($ws, int $fd, array $data): ?bool
     {
         if (empty($data['username']) || empty($data['password'])) {
             return $this->disconnect($ws, $fd, "The authentication information is incorrect. Please bring your uid, user name and password with you.");
         }
 
-        $res = self::$FdMapping->login($data['username'], $data['password']);
+        $res = $this->getFdMapping()->login($data['username'], $data['password']);
         if (100 != $res[0]) {
             return $this->disconnect($ws, $fd, $res[1], $res[0]);
         }
@@ -170,9 +236,9 @@ class RedisChatClient implements BaseClient
         }
 
         // 设置uid与fd对应关系
-        self::$FdMapping->uidBindFd($user['uid'], $fd);
-        self::$FdMapping->fdBindUid($fd, $user['uid']);
-        self::$FdMapping->setUserLoginLasted($user['uid'], time());
+        $this->getFdMapping()->uidBindFd($user['uid'], $fd);
+        $this->getFdMapping()->fdBindUid($fd, $user['uid']);
+        $this->getFdMapping()->setUserLoginLasted($user['uid'], time());
         // Timer::after(500, function() use ($ws, $fd) {
         // 	// 广播更新用户
         // 	$this->__broadcast($ws, $fd);
@@ -181,18 +247,28 @@ class RedisChatClient implements BaseClient
         //send olddata and del olddata
         return $this->successSend($ws, $fd, [
             'uid' => $user['uid'],
-            'users' => self::$FdMapping->getSafeUserList(),
+            'users' => $this->getFdMapping()->getSafeUserList(),
         ], 'sign success');
     }
 
+    /**
+     * @param string $uid
+     * @return int|null
+     */
     private function __checkisOnline(string $uid): ?int
     {
-        return !empty(self::$FdMapping->getFdByUid($uid)) ? self::$FdMapping->getFdByUid($uid) : false;
+        return !empty($this->getFdMapping()->getFdByUid($uid)) ? $this->getFdMapping()->getFdByUid($uid) : false;
     }
 
-    private function __register($ws, $fd, array $data)
+    /**
+     * @param $ws
+     * @param $fd
+     * @param array $data
+     * @return bool|null
+     */
+    private function __register($ws, $fd, array $data): ?bool
     {
-        $res = self::$FdMapping->register($data);
+        $res = $this->getFdMapping()->register($data);
         if (100 != $res[0]) {
             return $this->disconnect($ws, $fd, $res[1], $res[0]);
         }
@@ -200,30 +276,43 @@ class RedisChatClient implements BaseClient
         return $this->successSend($ws, $fd, [], 'register success');
     }
 
-    private function __getUsers($ws, int $fd, array $data)
+    /**
+     * @param $ws
+     * @param int $fd
+     * @param array $data
+     * @return bool|null
+     */
+    private function __getUsers($ws, int $fd, array $data): ?bool
     {
-        if (!self::$FdMapping->checkExistByUser($data['uid'], 'uid')) {
+        if (!$this->getFdMapping()->checkExistByUser($data['uid'], 'uid')) {
             return $this->disconnect($ws, $fd, "The user does not exist");
         }
 
         // Login failure has expired
-        if (self::$FdMapping->checkLoginOverdue($data['uid'])) {
+        if ($this->getFdMapping()->checkLoginOverdue($data['uid'])) {
             return $this->disconnect($ws, $fd, '长时间未登录了，请重新登录', 107);
         }
 
-        $res = self::$FdMapping->delFd($fd, $data['uid']);
+        $res = $this->getFdMapping()->delFd($fd, $data['uid']);
 
         // 设置uid与fd对应关系
-        self::$FdMapping->uidBindFd($data['uid'], $fd);
-        self::$FdMapping->fdBindUid($fd, $data['uid']);
-        $users = self::$FdMapping->getSafeUserList();
+        $this->getFdMapping()->uidBindFd($data['uid'], $fd);
+        $this->getFdMapping()->fdBindUid($fd, $data['uid']);
+        $users = $this->getFdMapping()->getSafeUserList();
 
         return $this->successSend($ws, $fd, ['users' => $users], 'lasted userlist', 100);
     }
 
-    private function __logout($ws, int $fd, array $data)
+
+    /**
+     * @param $ws
+     * @param int $fd
+     * @param array $data
+     * @return bool|null
+     */
+    private function __logout($ws, int $fd, array $data): ?bool
     {
-        if (self::$FdMapping->logout($data['uid'], $fd)) {
+        if ($this->getFdMapping()->logout($data['uid'], $fd)) {
             return $this->successSend($ws, $fd, [], 'logout', 100);
         }
 
@@ -231,10 +320,18 @@ class RedisChatClient implements BaseClient
     }
 
     // 广播
-    private function __broadcast($ws, $fd, int $type = 1, $fdMapping = null)
+
+    /**
+     * @param $ws
+     * @param $fd
+     * @param int $type
+     * @param null $fdMapping
+     * @return bool
+     */
+    private function __broadcast($ws, $fd, int $type = 1, FdMapping $fdMapping = null)
     {
         if ($fdMapping == null) {
-            $fdMapping = self::$FdMapping;
+            $fdMapping = $this->getFdMapping();
         }
         if (1 === $type) {
             $users = $fdMapping->getSafeUserList();
@@ -248,33 +345,56 @@ class RedisChatClient implements BaseClient
         }
     }
 
+    /**
+     * @param $ws
+     * @param int $old_fd
+     * @param string $uid
+     * @return bool
+     */
     private function __clearOldSocket($ws, int $old_fd, string $uid)
     {
-        // $fds = self::$FdMapping->getFdsByUid($user['uid']);
+        // $fds = $this->getFdMapping()->getFdsByUid($user['uid']);
         // // ->exist():检测fd对应的连接是否存在
         // foreach ($fds as $fd) {
-        // 	!$ws->exist($fd) && self::$FdMapping->delFd($fd);
+        // 	!$ws->exist($fd) && $this->getFdMapping()->delFd($fd);
         // }
-        return !$ws->exist($old_fd) ? false : self::$FdMapping->delFd($old_fd, $uid);
+        return !$ws->exist($old_fd) ? false : $this->getFdMapping()->delFd($old_fd, $uid);
     }
 
-    protected function successSend($ws, int $fd, array $data = [], string $msg = 'ok', int $code = 100)
+    /**
+     * @param $ws
+     * @param int $fd
+     * @param array $data
+     * @param string $msg
+     * @param int $code
+     */
+    protected function successSend($ws, int $fd, array $data = [], string $msg = 'ok', int $code = 100): bool
     {
-        if (empty($fd)) return;
+        if (empty($fd)) return false;
         $this->showMsg('showInfo', $msg);
         $ws->push($fd, json_encode([
             'code' => $code,
             'data' => $data,
             'msg' => $msg,
         ]));
+
+        return true;
     }
 
+    /**
+     * @param $ws
+     * @param $fd
+     */
     public function onClose($ws, $fd)
     {
         self::showMsg('showWarning', "client-{$fd} is closed");
-        self::$FdMapping->delCurrentFd($fd);
+        $this->getFdMapping()->delCurrentFd($fd);
     }
 
+    /**
+     * @param $func
+     * @param $msg
+     */
     private static function showMsg($func, $msg)
     {
         if (method_exists(Color::CLASS, $func)) {
@@ -286,7 +406,16 @@ class RedisChatClient implements BaseClient
         echo PHP_EOL, PHP_EOL;
     }
 
-    private function disconnect($ws, int $fd, string $msg, int $code = 105, array $data = [], bool $close = true)
+    /**
+     * @param $ws
+     * @param int $fd
+     * @param string $msg
+     * @param int $code
+     * @param array $data
+     * @param bool $close
+     * @return bool
+     */
+    private function disconnect($ws, int $fd, string $msg, int $code = 105, array $data = [], bool $close = true): ?bool
     {
         self::showMsg('showError', "code:{$code}\nmsg:{$msg}");
         $jsonData = json_encode([
@@ -298,5 +427,11 @@ class RedisChatClient implements BaseClient
         // $ws->disconnect($fd);
         $close && $ws->close($fd);
         return false;
+    }
+
+    public function __destruct()
+    {
+        // TODO: Implement __destruct() method.
+        $this->fdMapping = null;
     }
 }

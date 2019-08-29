@@ -37,6 +37,12 @@ class FdMapping
         }
     }
 
+    public function __destruct()
+    {
+        // TODO: Implement __destruct() method.
+        $this->redis->close();
+    }
+
     private function goRoutineRedis(array $redisConfig)
     {
         \Swoole\Runtime::enableCoroutine(true, SWOOLE_HOOK_TCP | SWOOLE_HOOK_UNIX);
