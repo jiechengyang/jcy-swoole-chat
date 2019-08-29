@@ -75,7 +75,7 @@ class RedisChatClient implements BaseClient
     public function onOpen($ws, $request)
     {
         if (!$ws->isEstablished($request->fd)) {
-            return $this->disconnect($ws, $fd, "Not a standard websocket protocol");
+            return $this->disconnect($ws, $request->fd, "Not a standard websocket protocol");
         }
 
         if (!self::$FdMapping) {
@@ -144,7 +144,7 @@ class RedisChatClient implements BaseClient
         } else {
             //offline save
             self::$FdMapping->saveChatMsg($uid, $data['to'], $data['body']);
-            $r = $this->successSend($ws, $to_fd, ['offline' => 1], 'send msg to_fd success', 104);
+//            $r = $this->successSend($ws, $to_fd, ['offline' => 1], 'send msg to_fd success', 104);
         }
 
         return $this->successSend($ws, $fd, [], 'send msg success - ' . $fd);
@@ -153,7 +153,7 @@ class RedisChatClient implements BaseClient
     private function __sign($ws, int $fd, array $data)
     {
         if (empty($data['username']) || empty($data['password'])) {
-            return $this->disconnect($ws, $frame->fd, "The authentication information is incorrect. Please bring your uid, user name and password with you.");
+            return $this->disconnect($ws, $fd, "The authentication information is incorrect. Please bring your uid, user name and password with you.");
         }
 
         $res = self::$FdMapping->login($data['username'], $data['password']);
@@ -187,7 +187,7 @@ class RedisChatClient implements BaseClient
         ], 'sign success');
     }
 
-    private function __checkisOnline(string $uid)
+    private function __checkisOnline(string $uid): ?int
     {
         return !empty(self::$FdMapping->getFdByUid($uid)) ? self::$FdMapping->getFdByUid($uid) : false;
     }
