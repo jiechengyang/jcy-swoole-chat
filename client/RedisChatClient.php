@@ -117,9 +117,6 @@ class RedisChatClient implements BaseClient
     private function __chat($ws, int $fd, array $data)
     {
         // task process
-        // if (empty($data['from'])) {
-        // 	return $this->disconnect($ws, $frame->fd, "Illegal access to the server");
-        // }
         if (empty($data['to'])) {
             return $this->disconnect($ws, $fd, "The listener doesn't exist.");
         }
@@ -143,8 +140,9 @@ class RedisChatClient implements BaseClient
             ], 'send msg success', 104);
         } else {
             //offline save
+            $to_fd = self::$FdMapping->getFdByUid($data['to']);
             self::$FdMapping->saveChatMsg($uid, $data['to'], $data['body']);
-//            $r = $this->successSend($ws, $to_fd, ['offline' => 1], 'send msg to_fd success', 104);
+            $r = $this->successSend($ws, $to_fd, ['offline' => 1], 'send msg to_fd success', 104);
         }
 
         return $this->successSend($ws, $fd, [], 'send msg success - ' . $fd);
