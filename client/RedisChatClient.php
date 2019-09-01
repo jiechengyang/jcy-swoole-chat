@@ -31,12 +31,12 @@ class RedisChatClient implements BaseClient
     {
         return $this->fdMapping;
     }
-    
+
     public function setFdMapping(FdMapping $fdMapping)
     {
         $this->fdMapping = $fdMapping;
     }
-    
+
     /**
      * @param $server
      */

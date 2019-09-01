@@ -44,28 +44,6 @@ class BaseSwoole
         $this->client = $client;
     }
 
-    /*	["onStart":"Swoole\Server":private]=>
-        NULL
-        ["onShutdown":"Swoole\Server":private]=>
-        NULL
-        ["onWorkerStart":"Swoole\Server":private]=>
-        NULL
-        ["onWorkerStop":"Swoole\Server":private]=>
-        NULL
-        ["onWorkerExit":"Swoole\Server":private]=>
-        NULL
-        ["onWorkerError":"Swoole\Server":private]=>
-        NULL
-        ["onTask":"Swoole\Server":private]=>
-        NULL
-        ["onFinish":"Swoole\Server":private]=>
-        NULL
-        ["onManagerStart":"Swoole\Server":private]=>
-        NULL
-        ["onManagerStop":"Swoole\Server":private]=>
-        NULL
-        ["onPipeMessage":"Swoole\Server":private]=>*/
-
     public function run()
     {
         $this->server->on('start', [$this->client, 'onStart']);

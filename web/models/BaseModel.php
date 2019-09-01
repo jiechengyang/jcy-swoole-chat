@@ -9,7 +9,7 @@
 namespace App\models;
 
 
-class BaseModel
+final class BaseModel
 {
     public function __construct()
     {
