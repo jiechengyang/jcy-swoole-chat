@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 /**
  *
  * @Authors jiechengyang (2064320087@qq.com)
@@ -8,12 +8,14 @@
 
 namespace chat;
 
+use App\component\Singleton;
 use chat\helper\Color;
 use chat\core\BaseSwoole;
 
 class Application
 {
-    private static $_instance;
+//    private static $_instance;
+    use Singleton;
 
     private static $config;
 
@@ -119,14 +121,15 @@ IMG;
     /**
      * 创建框架启动的必要目录（日志、swoole real data）
      */
-    public function mkdir():void
+    public function mkdir(): void
     {
-        if (!is_dir(self::$config['swoole']['log']['path'])){
+        if (!is_dir(self::$config['swoole']['log']['path'])) {
             mkdir(self::$config['swoole']['log']['path'], 0777, true);
         }
 
     }
-    private function errorHandler():void
+
+    private function errorHandler(): void
     {
         if (SCHAT_DEBUG) {
             set_exception_handler(__CLASS__ . '::exceptionHandler');
@@ -138,7 +141,7 @@ IMG;
         }
     }
 
-    final public static function exceptionHandler($exception):void
+    final public static function exceptionHandler($exception): void
     {
         $exceptionHash = array(
             'className' => 'Exception',
@@ -183,7 +186,7 @@ IMG;
      * @param $class
      * 自动注册
      */
-    final public static function autoLoader($class):void
+    final public static function autoLoader($class): void
     {
         if (isset(self::$classPath[$class])) {
             require_once "" . self::$classPath[$class] . "";

@@ -1,25 +1,19 @@
 <?php declare(strict_types=1);
+/**
+ * swoole web server init file
+ * Created by PhpStorm.
+ * User: Administrator
+ * Date: 2019/7/19 0019
+ * Time: 下午 15:49
+ */
 
 defined('ROOT_PATH') or define('ROOT_PATH', dirname(__DIR__));
 defined('WEB_PATH') or define('WEB_PATH', __DIR__);
 $config = require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'common.php';
 $config['web']['classPath'] = [];
 require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-//require_once WEB_PATH . DIRECTORY_SEPARATOR .'libary' . DIRECTORY_SEPARATOR . 'Http.php';
-
 spl_autoload_register('autoLoader');
-//register_shutdown_function('fatalError');
 set_exception_handler('appError');
-
-
-//function fatalError():void
-//{
-//    header("Connection: close");
-//    $size = ob_get_length();
-//    header("Content-Length: $size");
-//    ob_end_flush();
-//    flush();
-//}
 
 function appError($exception): void
 {
