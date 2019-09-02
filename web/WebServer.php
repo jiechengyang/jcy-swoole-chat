@@ -21,56 +21,56 @@ set_exception_handler('appError');
 //    flush();
 //}
 
-function appError($exception):void
+function appError($exception): void
 {
-        $exceptionHash = array(
-            'className' => 'Exception',
-            'message' => $exception->getMessage(),
-            'code' => $exception->getCode(),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'userAgent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
-            'trace' => array(),
+    $exceptionHash = array(
+        'className' => 'Exception',
+        'message' => $exception->getMessage(),
+        'code' => $exception->getCode(),
+        'file' => $exception->getFile(),
+        'line' => $exception->getLine(),
+        'userAgent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+        'trace' => array(),
+    );
+    $traceItems = $exception->getTrace();
+    foreach ($traceItems as $traceItem) {
+        $traceHash = array(
+            'file' => isset($traceItem['file']) ? $traceItem['file'] : 'null',
+            'line' => isset($traceItem['line']) ? $traceItem['line'] : 'null',
+            'function' => isset($traceItem['function']) ? $traceItem['function'] : 'null',
+            'args' => array(),
         );
-        $traceItems = $exception->getTrace();
-        foreach ($traceItems as $traceItem) {
-            $traceHash = array(
-                'file' => isset($traceItem['file']) ? $traceItem['file'] : 'null',
-                'line' => isset($traceItem['line']) ? $traceItem['line'] : 'null',
-                'function' => isset($traceItem['function']) ? $traceItem['function'] : 'null',
-                'args' => array(),
-            );
 
-            if (!empty($traceItem['class'])) {
-                $traceHash['class'] = $traceItem['class'];
-            }
-
-            if (!empty($traceItem['type'])) {
-                $traceHash['type'] = $traceItem['type'];
-            }
-
-            if (!empty($traceItem['args'])) {
-                foreach ($traceItem['args'] as $argsItem) {
-                    $traceHash['args'][] = \var_export($argsItem, true);
-                }
-            }
-
-            $exceptionHash['trace'][] = $traceHash;
+        if (!empty($traceItem['class'])) {
+            $traceHash['class'] = $traceItem['class'];
         }
-        print_r($exceptionHash);
+
+        if (!empty($traceItem['type'])) {
+            $traceHash['type'] = $traceItem['type'];
+        }
+
+        if (!empty($traceItem['args'])) {
+            foreach ($traceItem['args'] as $argsItem) {
+                $traceHash['args'][] = \var_export($argsItem, true);
+            }
+        }
+
+        $exceptionHash['trace'][] = $traceHash;
+    }
+    print_r($exceptionHash);
 }
 
 function error_fatal($mask = NULL): ?string
 {
-    if(!is_null($mask)){
+    if (!is_null($mask)) {
         $GLOBALS['error_fatal'] = $mask;
-    }elseif(!isset($GLOBALS['die_on'])){
+    } elseif (!isset($GLOBALS['die_on'])) {
         $GLOBALS['error_fatal'] = 0;
     }
     return $GLOBALS['error_fatal'];
 }
 
-function autoLoader(string $class):void
+function autoLoader(string $class): void
 {
     global $config;
     echo PHP_EOL;
@@ -79,8 +79,8 @@ function autoLoader(string $class):void
         return;
     }
 
-    $baseClass = str_replace("\\",  DIRECTORY_SEPARATOR, $class) . '.php';
-    $classPath = str_replace('App/',  '',  WEB_PATH . DIRECTORY_SEPARATOR . $baseClass);
+    $baseClass = str_replace("\\", DIRECTORY_SEPARATOR, $class) . '.php';
+    $classPath = str_replace('App/', '', WEB_PATH . DIRECTORY_SEPARATOR . $baseClass);
     if (is_file($classPath)) {
         $config['web']['path'][$baseClass] = $classPath;
         require_once($classPath);
@@ -105,7 +105,7 @@ $http->set($webConfig);
 //onTask事件仅在task进程中发生
 //onFinish事件仅在worker进程中发生
 //onStart/onManagerStart/onWorkerStart 3个事件的执行顺序是不确定的
-$http->on('start', function(swoole_server $server) {
+$http->on('start', function (swoole_server $server) {
 //    在此事件之前Server已进行了如下操作
 //    已创建了manager进程
 //    已创建了worker子进程
@@ -134,13 +134,13 @@ $http->on('start', function(swoole_server $server) {
 ////    如果想使用Reload机制实现代码重载入，必须在onWorkerStart中require你的业务文件，而不是在文件头部。在onWorkerStart调用之前已包含的文件，不会重新载入代码。
 //});
 
-$http->on('Connect', function(swoole_server $server, int $fd, int $reactorId) {
+$http->on('Connect', function (swoole_server $server, int $fd, int $reactorId) {
 //    有新的连接进入时，在worker进程中回调
-        $fdinfo = $server->getClientInfo($fd);
-        $connect_time = date('Y-m-d H:i:s', $fdinfo['connect_time']);
-        $last_time = date('Y-m-d H:i:s', $fdinfo['last_time']);
-        $msg = "fid#{$fd}reactorId#{$reactorId},  remote_ip#{$fdinfo['remote_ip']},  remote_port#{$fdinfo['remote_port']},  connect_time#{$connect_time},  last_time#{$last_time}";
-        echo $msg, PHP_EOL;
+    $fdinfo = $server->getClientInfo($fd);
+    $connect_time = date('Y-m-d H:i:s', $fdinfo['connect_time']);
+    $last_time = date('Y-m-d H:i:s', $fdinfo['last_time']);
+    $msg = "fid#{$fd}reactorId#{$reactorId},  remote_ip#{$fdinfo['remote_ip']},  remote_port#{$fdinfo['remote_port']},  connect_time#{$connect_time},  last_time#{$last_time}";
+    echo $msg, PHP_EOL;
 });
 
 $http->on('receive', function (swoole_server $serv, int $fd, int $reactor_id, $data) {
@@ -148,7 +148,7 @@ $http->on('receive', function (swoole_server $serv, int $fd, int $reactor_id, $d
 
 $http->on('Request', [App\libary\Http::class, 'receive']);
 
-$http->on('Close', function(swoole_server $server, int $fd, int $reactorId) {
+$http->on('Close', function (swoole_server $server, int $fd, int $reactorId) {
 
 });
 

@@ -15,7 +15,7 @@ class Http
     public static $response;
     private static $router = null;
 
-    public static function receive($request,  $response)
+    public static function receive(\swoole_http_request $request, \swoole_http_response $response)
     {
         if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
             return $response->end();
