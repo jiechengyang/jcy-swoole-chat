@@ -99,7 +99,8 @@ $http->set($webConfig);
 //onTask事件仅在task进程中发生
 //onFinish事件仅在worker进程中发生
 //onStart/onManagerStart/onWorkerStart 3个事件的执行顺序是不确定的
-$http->on('start', function (swoole_server $server) {
+$http->on('start', function (swoole_server $server) use($webConfig) {
+    echo 'jswoole web host#', $webConfig['host'], ' port#', $webConfig['port'], PHP_EOL;
 //    在此事件之前Server已进行了如下操作
 //    已创建了manager进程
 //    已创建了worker子进程

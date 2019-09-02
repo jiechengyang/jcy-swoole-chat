@@ -328,8 +328,9 @@ class FdMapping
         if (function_exists('com_create_guid')) {
             return com_create_guid();
         } else {
-            mt_srand((double)microtime() * 10000);
-            $charid = strtoupper(md5(uniqid(rand(), true)));
+            mt_srand(crc32(microtime()));
+//            mt_srand((double)microtime() * 10000, mt_getrandmax());
+            $charid = strtoupper(md5(uniqid(strval(rand()), true)));
             $hyphen = chr(45);
             $uuid = chr(123)
                 . substr($charid, 0, 8) . $hyphen
