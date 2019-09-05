@@ -67,7 +67,6 @@ function error_fatal($mask = NULL): ?string
 function autoLoader(string $class): void
 {
     global $config;
-    echo PHP_EOL;
     if (isset($config['web']['path'][$class])) {
         require_once "" . $config['web']['path'][$class] . "";
         return;

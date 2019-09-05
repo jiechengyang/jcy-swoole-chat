@@ -93,18 +93,18 @@ class Route
                 // ... 405 Method Not Allowed  方法不允许
                 self::$response->status(405);
                 self::$response->end("405 Method Not Allowed");
-                return;
+                break;
             case FastRoute\Dispatcher::FOUND: // 找到对应的方法
                 $handler = $this->routeInfo[1]; // 获得处理函数
-                $vars = $this->routeInfo[2]; // 获取请求参数
+                $actionDefaultParams = $this->routeInfo[2]; // 获取请求参数
                 // ... call $handler with $vars // 调用处理函数
 //                $controller = new \ReflectionClass($handler[0]);
 //                $instance  = $controller->newInstanceArgs(); // 相当于实例化Person 类
 //                $method = $controller->getMethod('init');
 ////                $method->invoke($instance);
 //                $method->invokeArgs($instance, [$vars, $request, $response]);
-                is_object($this->currentController) && $this->currentController->init($vars, $request, $response);
-                self::$response->end(call_user_func($handler, $vars));//[$vars, self::$request]
+                is_object($this->currentController) && $this->currentController->init($request, $response);
+                self::$response->end(call_user_func($handler, $actionDefaultParams));//[$vars, self::$request]
                 break;
         }
     }

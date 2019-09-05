@@ -8,14 +8,13 @@
 
 namespace App\controller;
 
+use App\libary\BaseHelper;
 
 class BaseController
 {
     public $request;
 
     public $response;
-
-    public $vars;
 
     protected  $header;
 
@@ -35,9 +34,8 @@ class BaseController
     {
     }
 
-    public function init($vars, $request, $response):void
+    public function init($request, $response):void
     {
-        $this->vars = $vars;
         $this->request = $request;
         $this->response = $response;
         $this->header = $this->request->header;
@@ -54,8 +52,10 @@ class BaseController
         // TODO: 加载模板引擎
     }
 
-    public function callback($data):string
+    public function callback($data, $status = 200):string
     {
+        $this->response->status($status);
+
         return json_encode($data);
     }
 }
