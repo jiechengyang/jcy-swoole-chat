@@ -7,10 +7,11 @@
  * Time: 下午 15:49
  */
 
-defined('ROOT_PATH') or define('ROOT_PATH', dirname(__DIR__));
-defined('WEB_PATH') or define('WEB_PATH', __DIR__);
-$config = require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'common.php';
-$config['web']['classPath'] = [];
+defined('ROOT_PATH') or define('ROOT_PATH', dirname(__FILE__));
+defined('WEB_PATH') or define('WEB_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'public');
+defined('RUNTIME_PATH') or define('RUNTIME_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'runtime');
+$config = require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'main.php';
+$config['classPath'] = [];
 require_once ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 spl_autoload_register('autoLoader');
 set_exception_handler('appError');
@@ -67,28 +68,44 @@ function error_fatal($mask = NULL): ?string
 function autoLoader(string $class): void
 {
     global $config;
-    if (isset($config['web']['path'][$class])) {
-        require_once "" . $config['web']['path'][$class] . "";
+    if (isset($config['classPath'][$class])) {
+        require_once "" . $config['classPath'][$class] . "";
         return;
     }
 
     $baseClass = str_replace("\\", DIRECTORY_SEPARATOR, $class) . '.php';
-    $classPath = str_replace('App/', '', WEB_PATH . DIRECTORY_SEPARATOR . $baseClass);
+    $classPath = str_replace('App/', '', ROOT_PATH . DIRECTORY_SEPARATOR . $baseClass);
     if (is_file($classPath)) {
-        $config['web']['path'][$baseClass] = $classPath;
+        $config['classPath'][$baseClass] = $classPath;
         require_once($classPath);
         return;
     }
 }
 
-$webConfig = array_merge($config['web'], [
-    'log_file' => $config['swoole']['log']['path'] . DIRECTORY_SEPARATOR . 'web-swoole.log',
-    'pid_file' => $config['swoole']['log']['path'] . DIRECTORY_SEPARATOR . 'web-swoole.pid',
+function initPath($paths)
+{
+    array_walk($paths, function ($path, $key) {
+        !is_dir($path) && mkdir($path, 0770, true);
+    });
+}
+
+$config['server'] = array_merge($config['server'], [
+    'log_file' => $config['logs']['log_path'] . DIRECTORY_SEPARATOR . 'web-swoole.log',
+    'pid_file' => $config['logs']['pid_path'] . DIRECTORY_SEPARATOR . 'web-swoole.pid',
+    'document_root' => WEB_PATH
 ]);
 
-$http = new Swoole\Http\Server($webConfig['host'], $webConfig['port']);
+$configContainer = \App\libary\BaseConfig::getInstance($config);
+$configContainer->loadConfig($config);
+$config = null;
+initPath([
+    $configContainer->getConfig('logs')['log_path'],
+    $configContainer->getConfig('logs')['pid_path'],
+    WEB_PATH
+]);
+$http = new Swoole\Http\Server($configContainer->getConfig('server')['host'], $configContainer->getConfig('server')['port']);
 //$http->listen('127');---通过监听，我们可以对外创建一个http协议和websocket协议
-$http->set($webConfig);
+$http->set($configContainer->getConfig('server'));
 //事件执行顺序
 //所有事件回调均在$server->start后发生
 //服务器关闭程序终止时最后一次事件是onShutdown
@@ -98,8 +115,8 @@ $http->set($webConfig);
 //onTask事件仅在task进程中发生
 //onFinish事件仅在worker进程中发生
 //onStart/onManagerStart/onWorkerStart 3个事件的执行顺序是不确定的
-$http->on('start', function (swoole_server $server) use($webConfig) {
-    echo 'jswoole web host#', $webConfig['host'], ' port#', $webConfig['port'], PHP_EOL;
+$http->on('start', function (swoole_server $server) use($configContainer) {
+    echo 'jswoole web host#', $configContainer->getConfig('server')['host'], ' port#', $configContainer->getConfig('server')['port'], PHP_EOL;
 //    在此事件之前Server已进行了如下操作
 //    已创建了manager进程
 //    已创建了worker子进程
@@ -140,7 +157,14 @@ $http->on('Connect', function (swoole_server $server, int $fd, int $reactorId) {
 $http->on('receive', function (swoole_server $serv, int $fd, int $reactor_id, $data) {
 });
 
-$http->on('Request', [App\libary\Http::class, 'receive']);
+//$http->on('Request', [App\libary\Http::class, 'receive']);
+$http->on('Request', function (\swoole_http_request $req, \swoole_http_response $resp) use ($configContainer) {
+    return call_user_func_array([\App\libary\Http::class, 'receive'], [
+        $req,
+        $resp,
+        $configContainer
+    ]);
+});
 
 $http->on('Close', function (swoole_server $server, int $fd, int $reactorId) {
 

@@ -106,43 +106,58 @@ class Uploader
 
     // 上传类型
     private $type;
-    // yii表单的字段
-    private $attribute;
+
     //上传的目录
     private $uploadPath;
+
     // 上传的绝对路径
     private $savePath;
+
     // 上传的相对位置
     private $fullName;
+
     // 上传后的新文件名
     private $fileName;
+
     // 上传前的文件名
     private $oldFileName;
+
     // 文件hash散列算法
     private $hashType = 'md5_file';
 
     //上传对象 表单上传 $_FILES base64
     private $uploadedFile;
+
     // 上传参数
     private $config;
+
     // 上传状态信息
     private $stateInfo;
+
     // 文件类型
     private $fileType;
+
     // 文件大小
     private $fileSize;
+
     // 文件mimeType
     private $fileMime;
+
     // 用于base64上传
     private $base64Str = '';
+
     // 是否允许裁剪图片
     private $enableThumb = false;
+
     // 是否替换成裁剪的路径
     private $replacePath = false;
+
     // 裁剪图片后的宽度
     private $enableWidth = 220;
+
     // 裁剪图片后的高度
     private $enableHeight = 160;
+
     // 缩略图的文件路径
     private $thumbPath;
 
@@ -154,8 +169,8 @@ class Uploader
         $this->type = $type;
         $this->uploadedFile = $uploadedFile;
         $this->mimeMap = isset($this->config['mimeMap']) ? $this->config['mimeMap'] : $this->mimeMap;
-        $this->path = $path ? $path : date('Ym');
-//        $this->uploadPath = !isset($others['uploadAlias']) ? Yii::getAlias('@backend') . '/web/' . Yii::$app->params['uploadConfig']['uploadSaveFilePath'] . '/' . $path : $others['uploadAlias'] . $path;
+        $path = $path ? $path : date('Ym');
+        $this->uploadPath = WEB_PATH . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . $path;
     }
 
     public function upload()
@@ -166,7 +181,6 @@ class Uploader
             return $this->uploadOneFile();
         }
     }
-
 
     /**
      * 上传错误检查
@@ -247,7 +261,7 @@ class Uploader
      */
     private function uniqidFilename()
     {
-        return md5(time()) . uniqid();
+        return md5(strval(time())) . uniqid();
     }
 
     /**
@@ -298,10 +312,19 @@ class Uploader
             return false;
         }
 
-        $this->fileSize = $this->uploadedFile->size;
-        $this->fileType = '.' . $this->uploadedFile->extension;
-        $this->fileMime = $this->uploadedFile->type;
-        $this->oldFileName = $this->uploadedFile->name;
+
+        $this->fileSize = $this->uploadedFile['size'];
+        $fileMime = $this->uploadedFile['type'];
+        $types = explode('/', $fileMime);
+        $ext = end($types);
+        $this->fileType = '.' . $ext;
+        $this->fileMime = $this->uploadedFile['type'];
+        $this->oldFileName = $this->uploadedFile['name'];
+
+        if ($this->uploadedFile['error'] > 0) {
+            $this->stateInfo = $this->returnStateInfo($this->uploadedFile['error']);
+            return false;
+        }
 
         //检查文件大小是否超出限制
         if (!$this->checkSize()) {
@@ -325,14 +348,17 @@ class Uploader
         //创建目录失败
         if (!file_exists($this->uploadPath) && !mkdir($this->uploadPath, 0777, true)) {
             $this->stateInfo = $this->getStateInfo("ERROR_CREATE_DIR");
-            return;
+            return false;
         } else if (!is_writeable($this->uploadPath)) {
             $this->stateInfo = $this->getStateInfo("ERROR_DIR_NOT_WRITEABLE");
-            return;
+            return false;
         }
 
+        $this->fileName = $this->uniqidFilename() . $this->fileType;
+        $this->savePath = $this->uploadPath . DIRECTORY_SEPARATOR . $this->fileName;
+        $this->fullName = $this->getRelativePath($this->savePath);
         //移动文件 savePath
-        if (!(move_uploaded_file($this->uploadedFile["tmp_name"], $this->filePath) && file_exists($this->filePath))) { //移动失败
+        if (!(move_uploaded_file($this->uploadedFile["tmp_name"], $this->savePath) && file_exists($this->savePath))) { //移动失败
             $this->stateInfo = $this->getStateInfo("ERROR_FILE_MOVE");
         } else { //移动成功
             $this->stateInfo = $this->stateMap[0];
@@ -369,9 +395,15 @@ class Uploader
             "title" => $this->oldFileName,
             "mimeType" => $this->fileMime,
             "size" => $this->fileSize,
-            // "savePath"   => $this->savePath,
-            "thumb_path" => $this->thumbPath,
-            'attachment_id' => $this->attachment_id
+            "savePath" => $this->savePath
         ];
+    }
+
+    public function getRelativePath(string $absolutePath, string $needle = 'uploads')
+    {
+        if (false !== $fIndex = stripos($absolutePath, $needle))
+            return substr($absolutePath, $fIndex);
+
+        return false;
     }
 }

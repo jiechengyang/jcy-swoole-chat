@@ -16,26 +16,6 @@ class Route
 {
     private static $_instance = null;
 
-    protected static $request;
-
-    protected static $response;
-
-    private $header;
-
-    private $server;
-
-    private $queryParams;
-
-    private $postData;
-
-    private $__FILES;
-
-    protected $httpMethod;
-
-    protected $uri;
-
-    private $routeInfo;
-
     private $dispatcher;
 
     private $currentController;
@@ -72,66 +52,41 @@ class Route
         return self::$_instance;
     }
 
-    public function run($request, $response)
+    public function run(\swoole_http_request $request, \swoole_http_response $response, array $containers)
     {
-        self::$request = $request;
-        self::$response = $response;
-        $this->initData();
-        if (false !== $pos = strpos($this->uri, '?')) {
-            $uri = substr($this->uri, 0, $pos);
+        $uri = $request->server['request_uri'];
+        if (false !== $pos = strpos($uri, '?')) {
+            $uri = substr($uri, 0, $pos);
         }
-        $uri = rawurldecode($this->uri);
-        $this->routeInfo = $this->dispatcher->dispatch($this->httpMethod, $uri);
-        switch ($this->routeInfo[0])  {
+
+        $uri = rawurldecode($uri);
+        $routeInfo = $this->dispatcher->dispatch($request->server['request_method'], $uri);
+        switch ($routeInfo[0])  {
             case FastRoute\Dispatcher::NOT_FOUND:
                 // ... 404 Not Found 没找到对应的方法
-                self::$response->status(404);
-                self::$response->end("404 Not Found ");
+                $response->status(404);
+                $response->end("404 Not Found ");
                 break;
             case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $this->routeInfo[1];
                 // ... 405 Method Not Allowed  方法不允许
-                self::$response->status(405);
-                self::$response->end("405 Method Not Allowed");
+                $response->status(405);
+                $response->end("405 Method Not Allowed");
                 break;
             case FastRoute\Dispatcher::FOUND: // 找到对应的方法
-                $handler = $this->routeInfo[1]; // 获得处理函数
-                $actionDefaultParams = $this->routeInfo[2]; // 获取请求参数
+                $handler = $routeInfo[1]; // 获得处理函数
+                $actionDefaultParams = $routeInfo[2]; // 获取请求参数
                 // ... call $handler with $vars // 调用处理函数
 //                $controller = new \ReflectionClass($handler[0]);
 //                $instance  = $controller->newInstanceArgs(); // 相当于实例化Person 类
 //                $method = $controller->getMethod('init');
 ////                $method->invoke($instance);
 //                $method->invokeArgs($instance, [$vars, $request, $response]);
-                is_object($this->currentController) && $this->currentController->init($request, $response);
-                self::$response->end(call_user_func($handler, $actionDefaultParams));//[$vars, self::$request]
+                is_object($this->currentController) && $this->currentController->init($request, $response, $containers);
+                $response->end(call_user_func($handler, $actionDefaultParams));//[$vars, self::$request]
                 break;
         }
-    }
 
-    private function initData()
-    {
-        $this->header = self::$request->header;
-        $this->server = self::$request->server;
-        $this->queryParams = self::$request->get;
-        $this->postData = self::$request->post;
-        $this->__FILES = self::$request->files;
-        $this->httpMethod = $this->server['request_method'];
-        $this->uri = $this->server['request_uri'];
-    }
-
-    public function getIsGet():bool
-    {
-        return 'GET' === strtoupper($this->httpMethod);
-    }
-
-    public function getIsPost():bool
-    {
-        return 'POST' === strtoupper($this->httpMethod);
-    }
-
-    public function getRouteInfo():array
-    {
-        return $this->routeInfo;
+        return true;
     }
 }

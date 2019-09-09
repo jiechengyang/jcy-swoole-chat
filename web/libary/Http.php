@@ -13,9 +13,10 @@ class Http
 {
     public static $request;
     public static $response;
-    private static $router = null;
+    public static $containers;
+    private static $router;
 
-    public static function receive(\swoole_http_request $request, \swoole_http_response $response)
+    public static function receive(\swoole_http_request $request, \swoole_http_response $response, BaseConfig $configContainer)
     {
         if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
             return $response->end();
@@ -25,7 +26,9 @@ class Http
         $response->header('Server', 'JswooleServer');
         self::$request = $request;
         self::$response = $response;
-        self::registerRoute();
+        self::$containers['configContainer'] = $configContainer;
+        unset($configContainer);
+        return self::registerRoute();
     }
 
     public static function registerRoute()
@@ -34,7 +37,7 @@ class Http
             self::$router = Route::getInstance();
         }
         
-        self::$router->run(self::$request, self::$response);
+        return self::$router->run(self::$request, self::$response, self::$containers);
     }
 
     public static function response(swoole_server $server, int $fd, $data)

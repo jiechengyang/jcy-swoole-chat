@@ -30,14 +30,17 @@ class BaseController
 
     protected  $uri;
 
+    protected $containers;
+
     public function __construct()
     {
     }
 
-    public function init($request, $response):void
+    public function init($request, $response, $containers):void
     {
         $this->request = $request;
         $this->response = $response;
+        $this->containers = $containers;
         $this->header = $this->request->header;
         $this->server = $this->request->server;
         $this->queryParams = $this->request->get;
@@ -57,5 +60,30 @@ class BaseController
         $this->response->status($status);
 
         return json_encode($data);
+    }
+
+    public function getContainer($key)
+    {
+        if (!isset($this->containers[$key])) {
+            throw new \Exception("This class not exists!");
+        }
+
+        return $this->containers[$key];
+    }
+
+    public function getHostInfo(): ?string
+    {
+        if (!empty($this->server['http_host'])) {
+            return $this->server['http_host'];
+        }
+
+        if (isset($this->server['server_addr'])) {
+            $serverTag = $this->server['server_addr'];
+        } elseif (isset($this->server['server_name'])) {
+            $serverTag = $this->server['server_name'];
+        } else {
+            $serverTag = $this->getContainer('configContainer')->getConfig('server')['addr'];
+        }
+        return $serverTag . ':' . $this->server['server_port'];
     }
 }
