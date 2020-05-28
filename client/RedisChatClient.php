@@ -75,7 +75,7 @@ class RedisChatClient implements BaseClient
     public function onTask($ws, int $task_id, int $src_worker_id, $data)
     {
         self::showMsg('display', "#{$ws->worker_id}\tonTask: [PID={$ws->worker_pid}]: task_id=$task_id");
-        $fd = $data['fd'];
+        $fd = (int)$data['fd'];
         $type = $data['type'];
         $fdMapping = null;
         if (!$fdMapping) {
@@ -190,7 +190,7 @@ class RedisChatClient implements BaseClient
             return $this->disconnect($ws, $fd, "The Sender doesn't exist.");
         }
 
-        if (($to_fd = $this->__checkisOnline($data['to'])) !== false) {
+        if (($to_fd = $this->__checkIsOnline($data['to'])) !== false) {
             //online send
             $r = $this->successSend($ws, $to_fd, [
                 'from' => $uid,
@@ -228,7 +228,7 @@ class RedisChatClient implements BaseClient
         $user = $res[1];
         // 这里应该有一个抢登下线当前fd,检测uid是否在其他终端登录
         // 强制下线并给已经登录的人发送通知
-        if (($old_fd = $this->__checkisOnline($user['uid'])) !== false) {
+        if (($old_fd = $this->__checkIsOnline($user['uid'])) !== false) {
             // 下线通知：您的账号已在别的设备登录-code 107
             $rs = $this->disconnect($ws, $old_fd, "Offline notification: your account is logged on to another device", 107);
             // 清理过期/已断开的连接
@@ -255,9 +255,9 @@ class RedisChatClient implements BaseClient
      * @param string $uid
      * @return int|null
      */
-    private function __checkisOnline(string $uid): ?int
+    private function __checkIsOnline(string $uid): ?int
     {
-        return !empty($this->getFdMapping()->getFdByUid($uid)) ? $this->getFdMapping()->getFdByUid($uid) : false;
+        return !empty($this->getFdMapping()->getFdByUid($uid)) ? (int)$this->getFdMapping()->getFdByUid($uid) : 0;
     }
 
     /**
@@ -323,12 +323,12 @@ class RedisChatClient implements BaseClient
 
     /**
      * @param $ws
-     * @param $fd
+     * @param int $fd
      * @param int $type
      * @param null $fdMapping
      * @return bool
      */
-    private function __broadcast($ws, $fd, int $type = 1, FdMapping $fdMapping = null)
+    private function __broadcast($ws, int $fd, int $type = 1, FdMapping $fdMapping = null)
     {
         if ($fdMapping == null) {
             $fdMapping = $this->getFdMapping();
@@ -336,7 +336,7 @@ class RedisChatClient implements BaseClient
         if (1 === $type) {
             $users = $fdMapping->getSafeUserList();
             foreach ($users as $user) {
-                $sfd = $fdMapping->getFdByUid($user['uid']);
+                $sfd = (int)$fdMapping->getFdByUid($user['uid']);
                 if ($sfd === $fd || !$ws->exist($sfd)) continue;
                 $this->successSend($ws, $sfd, ['users' => $users], 'lasted userlist', 102);
             }
