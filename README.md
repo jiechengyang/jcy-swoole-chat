@@ -490,20 +490,7 @@ php init.php -m ImChat
                  }
              }
          }
-         ```
-
-         ## 第三方开源库
-
-         ```
-         - [Bootstrap](http://getbootstrap.com/)
-         - [Jquery](https://jquery.com/)
-         - [layer](https://layer.layui.com/)
-         - [crypto-js](https://www.npmjs.com/package/crypto-js)
-         - [swoole](https://www.swoole.com/)
-         - [websocketTest站主](http://www.websocket-test.com/)
-         ```
-
-         
+         ```         
 
          ## 技术小结
 
@@ -514,7 +501,16 @@ php init.php -m ImChat
          3. 前端聊天记录传输到服务端之间的数据加密 aes对称加密
 
          4. 服务端使用redis存储数据（用户，登录状态等）
+		 5. <font color=red>php严格模式下，需要注意变量类型是否一致</font>
 
             
-
+         ## 第三方开源库
+      
+         - [Bootstrap](http://getbootstrap.com/)
+         - [Jquery](https://jquery.com/)
+         - [layer](https://layer.layui.com/)
+         - [crypto-js](https://www.npmjs.com/package/crypto-js)
+         - [swoole](https://www.swoole.com/)
+         - [websocketTest站主](http://www.websocket-test.com/)
+        
             
