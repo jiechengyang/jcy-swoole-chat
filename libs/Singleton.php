@@ -1,13 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2019/7/26 0026
- * Time: 上午 10:40
- */
 declare(strict_types=1);
+/**
+ * Created by PhpStorm
+ * User: Administrator
+ * Author: JieChengYang
+ * Date: 2019/9/2
+ * Time: 22:48
+ */
 
-namespace App\component;
+namespace chat\libs;
 
 
 trait Singleton
@@ -16,9 +17,9 @@ trait Singleton
 
     /**
      * @param array ...$args
-     * @return null|static
+     * @return null
      */
-    public static  function getInstance(...$args)
+    public static function getInstance(...$args)
     {
         if (is_null(self::$_instance)) {
             // TODO: new static and new self 区别在于存在继承时，new static决定在于当前调用，而new self 在于类本身

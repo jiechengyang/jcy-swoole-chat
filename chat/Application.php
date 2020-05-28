@@ -8,14 +8,12 @@
 
 namespace chat;
 
-use App\component\Singleton;
 use chat\helper\Color;
 use chat\core\BaseSwoole;
 
 class Application
 {
-//    private static $_instance;
-    use Singleton;
+    private static $_instance;
 
     private static $config;
 

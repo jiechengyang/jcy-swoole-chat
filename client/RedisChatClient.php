@@ -27,7 +27,7 @@ class RedisChatClient implements BaseClient
      */
     const BROADCAT_TYPE = 1;
 
-    public function getFdMapping(): FdMapping
+    public function getFdMapping(): ?FdMapping
     {
         return $this->fdMapping;
     }

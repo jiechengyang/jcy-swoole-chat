@@ -4,7 +4,8 @@ namespace chat\libs;
 
 class Aes
 {
-    private static $_instance = null;
+    use Singleton;
+//    private static $_instance = null;
     /**
      * var string $method 加解密方法，可通过openssl_get_cipher_methods()获得,如aes192，aes-128-ecb，aes-256-cbc等
      */
@@ -42,14 +43,14 @@ class Aes
         $this->options = $options;
     }
 
-    public static function getInstance($key, $method = 'aes-128-cbc', $iv = '', $options = OPENSSL_RAW_DATA)
-    {
-        if (!(self::$_instance instanceof self)) {
-            self::$_instance = new self($key, $method, $iv, $options);
-        }
-
-        return self::$_instance;
-    }
+//    public static function getInstance($key, $method = 'aes-128-cbc', $iv = '', $options = OPENSSL_RAW_DATA)
+//    {
+//        if (!(self::$_instance instanceof self)) {
+//            self::$_instance = new self($key, $method, $iv, $options);
+//        }
+//
+//        return self::$_instance;
+//    }
 
     /**
      * 加密方法，对数据进行加密，返回加密后的数据

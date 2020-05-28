@@ -31,27 +31,6 @@ return [
         'log_file' => ROOT_PATH . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'websocket-swoole.log'
         // 'task_worker_num' => 8,// 任务工作进程数量
     ],
-    'web' => [
-        'host' => '0.0.0.0',
-        'port' => 9521,
-//        'daemonize' => 1,
-//        'open_cpu_affinity' => 1,
-//        'task_worker_num' => 1,
-//        'enable_port_reuse' => true,
-        'worker_num' => 1,
-//        'log_file' => __DIR__.'/swoole.log',
-//        'reactor_num' => 24,
-//        'dispatch_mode' => 3,
-//        'discard_timeout_request' => true,
-//        'open_tcp_nodelay' => true,
-//        'open_mqtt_protocol' => true,
-//        'user' => 'www-data',
-//        'group' => 'www-data',
-//        'ssl_cert_file' => $key_dir.'/ssl.crt',
-//        'ssl_key_file' => $key_dir.'/ssl.key',
-//        'enable_static_handler' => true,
-//        'document_root' => '/home/htf/workspace/php/www.swoole.com/web/'
-    ],
     'redis' => [
         'host' => '127.0.0.1',
         'port' => 6379,
