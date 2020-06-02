@@ -74,7 +74,7 @@ php init.php -m ImChat
 
    ```b
    -m: 表示三个版本，分别使用三种技术交互
-   -d: 守护进程模式运行 如果：php init.php -m redisChatClient -d 就会以守护进程运行服务具体参考swoole文档
+   -d: 守护进程模式运行 如果：php init.php -m redisChatClient -d 1 就会以守护进程运行服务具体参考swoole文档
    ```
 
    
