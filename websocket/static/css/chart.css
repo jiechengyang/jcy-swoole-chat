@@ -39,6 +39,11 @@
 .chat-message {
     padding: 10px 20px;
 }
+.chat-message:before, .chat-message:after {
+    display: block;
+    content: '';
+    clear: both;
+}
 .chat-users {
     overflow-y: auto;
     height: 400px;
@@ -75,7 +80,10 @@ a {
     padding: 10px 20px;
     position: relative;
     border-radius: 4px;
+    float: left;
+    width: calc(100% - 58px);
 }
+
 /*.chat-discussion .chat-message:nth-child(2n+1) .message-avatar {
     float: left;
     margin-right: 10px;
@@ -96,13 +104,19 @@ a {
     text-align: right;
     margin-right: 55px;
 }*/
-.chat-discussion .chat-message:nth-child(n) .message-avatar {
+.chat-discussion .chat-message.self:nth-child(n) .message-avatar {
+    float: right;
+    margin-left: 10px;
+}
+.chat-discussion .chat-message.other:nth-child(n) .message-avatar {
     float: left;
     margin-right: 10px;
 }
-.chat-discussion .chat-message:nth-child(n) .message {
+.chat-discussion .chat-message.self:nth-child(n) .message {
+    text-align: right;
+}
+.chat-discussion .chat-message.other:nth-child(n) .message {
     text-align: left;
-    margin-left: 55px;
 }
 .message-date {
     font-size: 10px;
@@ -119,7 +133,9 @@ a {
     border-radius: 4px;
     margin-top: 1px;
 }
-
+.message-avatar img {
+    width:100%;
+}
 label.required:after {
     content: " * ";
     color: red;
@@ -208,14 +224,26 @@ label.required:after {
     display: inline-block;
 }
 .chat-msg-box {
-    height: 430px;
-    overflow: scroll;
+    max-height: 380px;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 .chat-input-box {
     position: static;
+    z-index: 99999;
+    border-top: 2px solid #000000;
     /*height: 100px;*/
 }
 .item_emoji {
     line-height: 32px;
     margin-left: 5px;
+}
+.chat-message-form {
+    margin-left: 30px;
+}
+.chat-message-form-control {
+    margin-left: 10px;
+}
+.message-input {
+    width: 75%;
 }

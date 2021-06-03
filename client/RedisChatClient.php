@@ -161,6 +161,8 @@ class RedisChatClient implements BaseClient
                 return $this->__getUsers($ws, $frame->fd, $data);
             case 'logout':
                 return $this->__logout($ws, $frame->fd, $data);
+            case 'connect.chat':
+                return $this->__connectChat($ws, $frame->fd, $data);
             case 'msg':
                 return $this->__chat($ws, $frame->fd, $data);
             default:
@@ -206,6 +208,11 @@ class RedisChatClient implements BaseClient
         }
 
         return $this->successSend($ws, $fd, [], 'send msg success - ' . $fd);
+    }
+
+    private function __connectChat($ws, int $fd, array $data)
+    {
+        var_dump($data);
     }
 
     /**
@@ -389,6 +396,7 @@ class RedisChatClient implements BaseClient
     {
         self::showMsg('showWarning', "client-{$fd} is closed");
         $this->getFdMapping()->delCurrentFd($fd);
+        //TODO: 将此客户端下线状态广播到其他客户端
     }
 
     /**

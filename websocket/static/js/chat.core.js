@@ -669,12 +669,18 @@ let business = {
         const title = '和' + user.username + '聊天'
         let suid = uid.replace("{", '')
         suid = suid.replace("}", '')
+        business.socketIO.send({
+            type: 'connect.chat',
+            // from: from,
+            toUser: user,
+            body: msg
+        })
         let html = '<div  id="chatModel-' + suid + '">' +
             '<div class="ibox">' +
             '<div class="ibox-title">' +
             '<img class="message-avatar" src="' + sex_logo + '" alt="">' +
             '</div>' +
-            '<div class="ibox-content" style="height:100%">' +
+            '<div class="ibox-content" -style="height:100%">' +
             '<div class="row chat-msg-box">' +
             '<div class="col-md-12 ">' +
             '<div class="chat-discussion">' +
@@ -682,9 +688,9 @@ let business = {
             '</div>' +
             '</div>' +
             '<div class="chat-input-box">' +
-            '<div class="col-sm-12">' +
+            '<div class="">' +
             '<div class="chat-message-form">' +
-            '<div style="float:left;margin-top:4px;">' +
+            '<div class="chat-message-form-control">' +
             '<a class="emoji" style="margin-right:10px;" data-toggle="popover" data-placement="top" title="表情"><img style="outline-width:40px;" class="img_emoji" src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/5c/huanglianwx_thumb.gif"></a>' +
             '<a id="a_uploadimg" style="margin-right:10px;" title="上传图片"><img style="padding-top:4px;" class="img_uploadimg" src="static/images/uploadpic.png"></a>' +
             '<a id="a_uploadfile" style="margin-right:10px;" title="上传文件"><img src="static/images/uploadfile.png"></a>' +
@@ -727,7 +733,7 @@ let business = {
             for (let i = 0; i < msgs.length; i++) {
                 const user = business.getUser(msgs[i][0])
                 if (!user) continue
-                business.creatChatDom(user, uid, msgs[i][2], msgs[i][3])
+                business.creatChatDom(user, uid, msgs[i][2], msgs[i][3], 'old')
             }
         }
         // 我收到
@@ -843,12 +849,18 @@ let business = {
         business.saveChatMsgByCache(to, from, msg, createTime, 2)
     },
 
-    creatChatDom: (user, uid, msg, createTime) => {
+    creatChatDom: (user, uid, msg, createTime, type) => {
         if (utils.isNull(uid))
             return
-        const dom = $('<div class="chat-message"></div>')
+        type = type || 'news';
+        var classStr = 'self';
+        console.log(user, uid)
+        if (user.uid == uid) {
+            classStr = 'other'
+        }
+        const dom = $(`<div class="chat-message ${type} ${classStr}"></div>`)
         const sexLogo = 1 == user.sex ? 'woman_logo.jpg' : 'man_logo.jpg'
-        $('<img class="message-avatar" src="static/images/' + sexLogo + '" alt="">').appendTo(dom)
+        $('<div class="message-avatar"><img src="static/images/' + sexLogo + '" alt=""></div>').appendTo(dom)
         const msdom = $("<div class='message'></div>")
         msdom.appendTo(dom)
         const ud = $('<a class="message-author" href="#"> ' + user.username + '</a>')

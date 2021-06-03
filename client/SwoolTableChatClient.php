@@ -44,4 +44,14 @@ class SwoolTableChatClient implements BaseClient
     {
         echo "client-{$fd} is closed\n";
     }
+
+    public function onTask($serv, int $task_id, int $src_worker_id, $data)
+    {
+        // TODO: Implement onTask() method.
+    }
+
+    public function onFinish($serv, int $task_id, $data)
+    {
+        // TODO: Implement onFinish() method.
+    }
 }

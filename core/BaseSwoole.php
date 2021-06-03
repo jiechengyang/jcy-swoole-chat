@@ -11,6 +11,8 @@ namespace chat\core;
 use \Swoole;
 use \Swoole\WebSocket\Server as WebSocketServer;
 use chat\helper\Color;
+use chat\client\helper\ArrayHelper;
+use chat\client\helper\ServerHelper;
 
 class BaseSwoole
 {
@@ -35,7 +37,8 @@ class BaseSwoole
 
         $this->server = new WebSocketServer($config['host'], $config['port']);//\swoole_websocket_server($config['host'], $config['port']);
 
-        $this->server->set($config);
+        $swooleConfig = ArrayHelper::parts($config, ServerHelper::getAllOptionKeys());
+        $this->server->set($swooleConfig);
         $this->config = $config;
     }
 
